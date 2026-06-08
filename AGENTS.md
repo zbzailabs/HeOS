@@ -13,3 +13,17 @@
 禁止使用中国互联网大厂黑话如“落盘”、“拉通”、“对齐”。不要使用“不是....而是”，直截了当，简洁明了撰写。
 
 编写 .docx 格式文档时，行文格式严格按照 GB/T 9704-2012 执行，写作风格符合中国政府公文风格。按 GB/T 9704-2012 风格设置：A4 页面，正式公文版式，正文以仿宋类字体为主，标题和层级标题按公文层级字体处理。正文使用专业、克制、可提交业主的表述；避免营销腔、口号化、内部判断语和中国互联网公司黑话。表格仅用于预算、建设内容、实施计划和验收指标，避免把普通说明文字做成大段表格。生成后使用 Documents 工作流渲染为页面图片，逐页检查标题、表格、页边距、分页、字体和预算表合计。不要使用“应该”，“应”，“可……”这种弱化语气，作为方案方提供的方案，要采用坚定、确切的表述。
+
+## Agent skills
+
+### Issue tracker
+
+HeOS 使用 GitHub Issues 作为任务载体，仓库为 `zbzailabs/HeOS`，并同步至项目管理页 https://github.com/users/zbzailabs/projects/2。See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage 以默认五类标签运行：`needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix`。See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+采用单一上下文结构，优先读取 `CONTEXT.md` 与 `docs/adr/`（若不存在则按现状静默跳过）。See `docs/agents/domain.md`.
