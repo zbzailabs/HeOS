@@ -4,7 +4,7 @@
 初始化项目时添加 [AGENTS.md](https://github.com/agentsmd/agents.md) 、DESIGN.md。
 开发项目时，先读取 AGENTS.md 和 DESIGN.md；如果没有这两个文件，则补全。
 
-这台 Mac mini 的开发环境信息：M 芯片 Mac Mini，16G 内存，512G 硬盘；已安装 Homebrew；已经 `brew install node pnpm git gh python mole pandoc jq wget zsh curl httpie codex libreoffice`；我们的 GitHub 账号是 <https://github.com/realriplab>，GitHub 已经添加到 github，本地密钥 `.ssh/id_ed25519`，使用 SSH 连接 GitHub，可使用 `gh` 管理代码；Node.js 开发优先使用 pnpm。本机位于中国杭州，配置了 Clash Verge 和 VPN，以方便访问 GitHub、Google、TG 等外网。Clash 已开启 TUN 模式。
+这台 Mac mini 的开发环境信息：M 芯片 Mac Mini，16G 内存，512G 硬盘；已安装 Homebrew；已经 `brew install node pnpm git gh python mole pandoc jq wget zsh curl httpie codex libreoffice`；我们的 GitHub 账号是 <https://github.com/zbzailabs>，GitHub 已经添加到 github，本地密钥 `.ssh/id_ed25519`，使用 SSH 连接 GitHub，可使用 `gh` 管理代码；Node.js 开发优先使用 pnpm。本机位于中国杭州，配置了 Clash Verge 和 VPN，以方便访问 GitHub、Google、TG 等外网。Clash 已开启 TUN 模式。
 
 本机已配置 spec-kit。用户要求开发项目、编写代码时，提醒并引导用户采用 Spec-Driven Development。
 
