@@ -1,0 +1,199 @@
+# HeOS 开发指南
+
+版本日期：2026-06-08
+
+## 1. 开发原则
+
+HeOS 开发采用 Spec-Driven Development。每个新功能先完成规格、验收标准、边界、数据模型和风险说明，再进入代码实现。
+
+开发前必须读取：
+
+- `AGENTS.md`
+- `DESIGN.md`
+- `README.md`
+- 本目录下的 PRD 分册
+
+## 2. 本地环境
+
+本项目使用 pnpm。
+
+```bash
+pnpm install
+pnpm dev
+```
+
+默认开发端口为 `3000`。
+
+常用验证命令：
+
+```bash
+pnpm test
+pnpm build
+```
+
+## 3. 路由开发
+
+路由文件位于 `src/routes`。新增页面时创建对应路由文件，使用 TanStack Router file-based routing。
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/projects')({
+  component: ProjectsPage,
+})
+
+function ProjectsPage() {
+  return <main>项目列表</main>
+}
+```
+
+页面跳转使用 `Link`：
+
+```tsx
+import { Link } from '@tanstack/react-router'
+
+export function ProjectLink() {
+  return <Link to="/projects">项目</Link>
+}
+```
+
+## 4. Server Functions
+
+页面内部数据读取和写入使用 TanStack Start Server Functions。服务端函数负责权限校验、租户上下文、数据库访问和审计记录。
+
+```tsx
+import { createServerFn } from '@tanstack/react-start'
+
+export const getServerTime = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  return new Date().toISOString()
+})
+```
+
+业务函数命名采用动宾结构，例如 `getProjectDashboard`、`listDevices`、`createAlertRule`。
+
+## 5. Server Routes
+
+外部接口、供应商 webhook、公开追溯接口使用 Server Routes。
+
+```tsx
+import { createFileRoute } from '@tanstack/react-router'
+import { json } from '@tanstack/react-start'
+
+export const Route = createFileRoute('/api/health')({
+  server: {
+    handlers: {
+      GET: () => json({ ok: true }),
+    },
+  },
+})
+```
+
+供应商接口不得在浏览器端直接调用。供应商凭据、token、错误码和同步记录全部在服务端处理。
+
+## 6. 数据库开发
+
+当前仓库保留 Prisma 和 Neon PostgreSQL 初始化示例。HeOS 一期业务开发优先采用 Cloudflare D1，配合 Workers Bindings 访问数据库。新增业务表、迁移和查询方案先按 D1 设计；只有 D1 无法满足容量、查询、事务或兼容性要求时，才进入外部 PostgreSQL/Neon 评审。
+
+现有示例命令仍可用于维护初始化 demo：
+
+```bash
+pnpm run db:generate
+pnpm run db:push
+pnpm run db:migrate
+pnpm run db:studio
+pnpm run db:seed
+```
+
+D1 相关命令在引入绑定和迁移目录后补充到本节。生产环境通过 Wrangler 绑定 D1、R2、KV、Queues 和 Secrets。本地数据库连接字符串 `DATABASE_URL` 只服务现有 Prisma/Neon 示例或经评审保留的外部数据库。
+
+业务模型从以下实体开始扩展：
+
+- `Tenant`
+- `Project`
+- `Site`
+- `Plot`
+- `Device`
+- `TelemetryLatest`
+- `TelemetryHistory`
+- `Alert`
+- `ControlCommand`
+- `AuditLog`
+- `CropModel`
+- `AgriTask`
+
+新增模型前先写规格，明确租户字段、索引、唯一约束、删除策略、审计需求、D1 迁移步骤和 Workers 绑定名称。
+
+## 7. Cloudflare 资源开发
+
+一期新功能优先使用以下 Cloudflare 资源：
+
+|资源|用途|
+|---|---|
+|Workers|TanStack Start SSR、Server Functions、Server Routes、供应商接入入口|
+|D1|租户、项目、设备、告警、审计、作物模型、农事任务和遥测索引|
+|R2|图片、报告、追溯素材、导出文件、供应商原始附件|
+|KV|租户配置、字典、功能开关、低频缓存、公开追溯页缓存|
+|Queues|仁科同步、告警派发、报告生成、AI 摘要、失败重试|
+|Cron Triggers|定时拉取仁科数据、补偿同步、周期巡检|
+|Secrets|供应商密码、token、数据库连接、AI Key|
+
+强一致业务状态进入 D1，不放入 KV。大文件进入 R2，不写入 D1。异步和可重试任务进入 Queues，不阻塞页面请求。
+
+## 8. 样式与组件
+
+样式入口为 `src/styles.css`。新增页面优先复用现有 token、Tailwind CSS 4 和 shadcn/ui 风格组件。业务系统界面保持信息密度、可扫描性和操作效率。
+
+按钮、筛选、表格、状态标签、告警级别和图表配色在业务组件中保持一致。图标优先使用 Lucide React。
+
+## 9. 测试
+
+当前测试命令：
+
+```bash
+pnpm test
+```
+
+新增业务代码时同步增加测试。重点覆盖：
+
+- 租户隔离。
+- 设备在线状态计算。
+- 仁科接口字段映射。
+- 告警阈值计算。
+- 控制命令校验链路。
+- AI 检索权限过滤。
+
+## 10. 构建与部署
+
+构建命令：
+
+```bash
+pnpm build
+```
+
+部署命令：
+
+```bash
+pnpm run deploy
+```
+
+部署前完成测试和构建。Cloudflare Workers 配置位于 `wrangler.jsonc`。引入 D1、R2、KV、Queues、Cron Triggers 后，同步补充 Wrangler 绑定和环境区分。
+
+## 11. 敏感配置
+
+`.env.local` 不提交到 GitHub。`.env.example` 保存变量名和说明。供应商账号、密码、token、MQTT 密码、数据库连接字符串和 AI API Key 都通过本地环境变量或部署平台 Secrets 管理。
+
+本次仁科接入文档按明确要求保留账号密码原文。该分册属于内部资料，公开发布前必须处理敏感信息。
+
+## 12. 飞书项目记录
+
+每次新任务开始先读取 HeOS 飞书项目内容并记录任务。任务结束时在飞书项目写入：
+
+- 修改文件。
+- 完成内容。
+- 验证命令。
+- 未完成项。
+- 后续建议。
+
+完成后更新流程节点。

@@ -11,11 +11,15 @@ HeOS 是基于 TanStack Start 初始化的 Web 应用项目，当前阶段目标
 - React 19
 - Vite
 - Tailwind CSS
-- Prisma
-- Neon serverless Postgres
 - Cloudflare Workers / Wrangler
+- Cloudflare D1
+- Cloudflare R2
+- Cloudflare KV
+- Cloudflare Queues / Cron Triggers
 - Vitest
 - pnpm
+
+当前仓库仍保留 Prisma 与 Neon serverless Postgres 的初始化示例。HeOS 一期新功能优先采用 TanStack + Cloudflare 生态：应用运行在 Cloudflare Workers，关系型业务数据优先使用 D1，对象资料进入 R2，配置和低频缓存进入 KV，供应商同步和异步任务使用 Queues 与 Cron Triggers。外部 PostgreSQL 只作为 D1 无法满足容量、查询或兼容性要求时的例外方案。
 
 ## 工程约定
 
