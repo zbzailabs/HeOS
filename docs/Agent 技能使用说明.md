@@ -26,9 +26,9 @@
 
 生成/更新路径：
 
-- `docs/agents/issue-tracker.md`
-- `docs/agents/triage-labels.md`
-- `docs/agents/domain.md`
+- `docs/agents/Issue任务管理.md`
+- `docs/agents/分流标签.md`
+- `docs/agents/领域上下文.md`
 - `AGENTS.md`
 
 ## 三、核心技能清单与使用时机
@@ -88,5 +88,5 @@
 ## 六、故障与修复
 
 - 若技能找不到仓库上下文，先执行 `/setup-matt-pocock-skills`。
-- 若 triage 标签不一致，先修正 `docs/agents/triage-labels.md`。
+- 若 triage 标签不一致，先修正 `docs/agents/分流标签.md`。
 - 若技能输出不落地，回到 `AGENTS.md` 与 `DESIGN.md` 检查约束后重跑。

@@ -18,12 +18,30 @@
 
 ### Issue tracker
 
-HeOS 使用 GitHub Issues 作为任务载体，仓库为 `zbzailabs/HeOS`，并同步至项目管理页 https://github.com/users/zbzailabs/projects/2。See `docs/agents/issue-tracker.md`.
+HeOS 使用 GitHub Issues 作为任务载体，仓库为 `zbzailabs/HeOS`，并同步至项目管理页 https://github.com/users/zbzailabs/projects/2。See `docs/agents/Issue任务管理.md`.
+
+### Human and AI collaboration
+
+人类负责提出需求、大方向、问题反馈和验收；AI 负责拆解任务、创建 Issue、维护 Projects、编写代码、验证交付和同步飞书项目记录。See `docs/agents/人类与AI协作方式.md`.
+
+### Development management workflow
+
+HeOS 开发管理采用以下固定流程：
+
+- GitHub Issues 作为开发任务唯一主源，记录需求、边界、验收标准、相关文件、验证命令和完成结果。
+- GitHub Projects 作为开发看板和排期工具，管理 Issue 状态、优先级、里程碑和执行进度。
+- 飞书项目作为管理汇报与外部协同记录，记录任务启动、阶段进展、完成内容、验证结果、遗留项和流程节点更新。
+- 新任务开始时先读取飞书项目现有管理内容，再在 GitHub Issues 建立或确认任务。
+- 开发执行围绕 GitHub Issue 进行，PR、commit、验证记录必须关联对应 Issue。
+- 任务状态流转在 GitHub Projects 中维护。
+- 任务结束时，将 Issue 链接、PR 链接、完成内容、验证命令与结果、未完成项同步到飞书项目，并更新流程节点。
+
+执行优先级为：GitHub Issues = 任务事实来源；GitHub Projects = 开发看板与排期；飞书项目 = 汇报、流程节点和管理留痕。
 
 ### Triage labels
 
-Triage 以默认五类标签运行：`needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix`。See `docs/agents/triage-labels.md`.
+Triage 以默认五类标签运行：`needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix`。See `docs/agents/分流标签.md`.
 
 ### Domain docs
 
-采用单一上下文结构，优先读取 `CONTEXT.md` 与 `docs/adr/`（若不存在则按现状静默跳过）。See `docs/agents/domain.md`.
+采用单一上下文结构，优先读取 `CONTEXT.md` 与 `docs/adr/`（若不存在则按现状静默跳过）。See `docs/agents/领域上下文.md`.

@@ -1,7 +1,21 @@
 import { Link } from '@tanstack/react-router'
+import { useRouter } from '@tanstack/react-router'
+import { signOut, type AuthUser } from '../lib/auth'
 import ThemeToggle from './ThemeToggle'
 
-export default function Header() {
+type HeaderProps = {
+  user: AuthUser | null
+}
+
+export default function Header({ user }: HeaderProps) {
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    await signOut()
+    await router.navigate({ to: '/login' })
+    await router.invalidate()
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
       <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
@@ -38,28 +52,49 @@ export default function Header() {
           >
             Docs
           </a>
-          <details className="relative w-full sm:w-auto">
-            <summary className="nav-link list-none cursor-pointer">
-              Demos
-            </summary>
-            <div className="mt-2 min-w-56 rounded-xl border border-[var(--line)] bg-[var(--header-bg)] p-2 shadow-lg sm:absolute sm:right-0">
-              <a
-                href="/demo/prisma"
-                className="block rounded-lg px-3 py-2 text-sm text-[var(--sea-ink-soft)] no-underline transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)]"
-              >
-                Prisma
-              </a>
-              <a
-                href="/demo/neon"
-                className="block rounded-lg px-3 py-2 text-sm text-[var(--sea-ink-soft)] no-underline transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)]"
-              >
-                Neon
-              </a>
-            </div>
-          </details>
+          {user ? (
+            <details className="relative w-full sm:w-auto">
+              <summary className="nav-link list-none cursor-pointer">
+                Demos
+              </summary>
+              <div className="mt-2 min-w-56 rounded-xl border border-[var(--line)] bg-[var(--header-bg)] p-2 shadow-lg sm:absolute sm:right-0">
+                <a
+                  href="/demo/prisma"
+                  className="block rounded-lg px-3 py-2 text-sm text-[var(--sea-ink-soft)] no-underline transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)]"
+                >
+                  Prisma
+                </a>
+                <a
+                  href="/demo/neon"
+                  className="block rounded-lg px-3 py-2 text-sm text-[var(--sea-ink-soft)] no-underline transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)]"
+                >
+                  Neon
+                </a>
+              </div>
+            </details>
+          ) : null}
         </div>
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          {user ? (
+            <div className="hidden items-center gap-2 text-sm font-semibold text-[var(--sea-ink-soft)] md:flex">
+              <span>{user.email}</span>
+              <button
+                className="rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-3 py-2 text-sm font-bold text-[var(--sea-ink)] transition hover:bg-[var(--link-bg-hover)]"
+                type="button"
+                onClick={handleSignOut}
+              >
+                退出
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="rounded-xl border border-[var(--line)] bg-[var(--chip-bg)] px-3 py-2 text-sm font-bold text-[var(--sea-ink)] no-underline transition hover:bg-[var(--link-bg-hover)]"
+            >
+              登录
+            </Link>
+          )}
           <a
             href="https://x.com/tan_stack"
             target="_blank"
