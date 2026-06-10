@@ -96,6 +96,8 @@ HeOS 一期开发计划已完成梳理。
 - Create: `src/domain/standards/enums.test.ts`
 - Create: `src/domain/telemetry/model.ts`
 - Create: `src/domain/telemetry/model.test.ts`
+- Create: `src/domain/console/workbench.ts`
+- Create: `src/domain/console/workbench.test.ts`
 - Later tasks create D1 schema and persistence modules for dictionary, telemetry, alert, and audit records.
 
 - [x] **Task #4 Step 1: Write S0-01 spec**
@@ -236,6 +238,38 @@ Create `src/routes/console.tsx`. Load `getCurrentAccessContext`, `getCurrentAcce
 - [ ] **Task S3-03 Step 4: Update auth entry points**
 
 Keep `/` public, keep `/console` protected by the root route, route successful login to `/console`, and add a signed-in console link to the existing header.
+
+- [x] **Task S3-04 Step 1: Write console data workbench spec**
+
+Create `docs/specs/S3-04-console-data-workbench.md` to define the `/console` standard-dictionary and telemetry first-screen boundary, D1 binding, migration status, empty states, and validation commands.
+
+- [x] **Task S3-04 Step 2: Add console workbench source**
+
+Create `src/domain/console/workbench.ts` with standard dictionary coverage, telemetry latest/history model status, sample latest value, sample history query, D1 binding metadata, and migration list.
+
+- [x] **Task S3-04 Step 3: Add focused tests**
+
+Create `src/domain/console/workbench.test.ts` covering dictionary coverage, telemetry model state, sample latest value, cursor ordering, D1 binding, and migration list.
+
+- [x] **Task S3-04 Step 4: Update `/console` first screen**
+
+Update `src/routes/console.tsx` so `/console` shows standard dictionary coverage, telemetry latest/history status, sample latest value, explicit Renke/API empty state, and D1 implementation state.
+
+- [x] **Task S3-04 Step 5: Add D1 binding**
+
+Update `wrangler.jsonc` with `HEOS_DB` bound to Cloudflare D1 database `heos` and `migrations_dir: db/migrations`.
+
+- [x] **Task S3-04 Step 6: Validate, apply migrations, and update Issue #28**
+
+Run:
+
+```bash
+pnpm test
+pnpm build
+pnpm exec wrangler d1 migrations apply heos --remote
+```
+
+Post changed files, validation status, migration status, and remaining integration points to Issue #28.
 
 ### M2: Alerting and Rules
 

@@ -9,5 +9,13 @@
       "pattern": "app.yunhe.ai",
       "custom_domain": true
     }
+  ],
+  "d1_databases": [
+    {
+      "binding": "HEOS_DB",
+      "database_name": "heos",
+      "database_id": "0888289d-a50e-465c-89d9-d861fd8cca6b",
+      "migrations_dir": "db/migrations"
+    }
   ]
 }
