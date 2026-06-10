@@ -16,9 +16,13 @@ import {
   type CoreListQuery,
   type CoreQuerySeed,
 } from "./query"
+import {
+  createD1CoreQueryRepository,
+  type CoreD1Database,
+} from "./d1-query"
 
 export const defaultCoreTenantId = "tenant-tenglong-school"
-export const defaultCoreProjectId = "project-tenglong"
+export const defaultCoreProjectId = "project-tenglong-smart-farm"
 
 export const defaultCoreQuerySeed: CoreQuerySeed = {
   projects: [
@@ -156,6 +160,55 @@ export function createCoreApiHandlers(seed: CoreQuerySeed = defaultCoreQuerySeed
   }
 }
 
+export function createD1CoreApiHandlers(db: CoreD1Database) {
+  const repository = createD1CoreQueryRepository(db)
+
+  return {
+    dashboard: async (
+      params: URLSearchParams,
+      traceId = createTraceId("core"),
+    ) => {
+      const parsed = parseCoreListQuery(params, traceId)
+      if (!parsed.ok) {
+        return parsed
+      }
+
+      return ok(await repository.getDashboard(parsed.value), traceId)
+    },
+    projectDetail: async (
+      params: URLSearchParams,
+      traceId = createTraceId("core"),
+    ) => {
+      const parsed = parseCoreProjectDetailQuery(params, traceId)
+      if (!parsed.ok) {
+        return parsed
+      }
+
+      return ok(await repository.getProjectDetail(parsed.value), traceId)
+    },
+    devices: async (params: URLSearchParams, traceId = createTraceId("core")) =>
+      listHandlerAsync(params, traceId, (query) => repository.listDevices(query)),
+    alerts: async (params: URLSearchParams, traceId = createTraceId("core")) =>
+      listHandlerAsync(params, traceId, (query) => repository.listAlerts(query)),
+    agriTasks: async (params: URLSearchParams, traceId = createTraceId("core")) =>
+      listHandlerAsync(params, traceId, (query) => repository.listAgriTasks(query)),
+    traceArchives: async (
+      params: URLSearchParams,
+      traceId = createTraceId("core"),
+    ) =>
+      listHandlerAsync(params, traceId, (query) =>
+        repository.listTraceArchives(query),
+      ),
+    aiInteractions: async (
+      params: URLSearchParams,
+      traceId = createTraceId("core"),
+    ) =>
+      listHandlerAsync(params, traceId, (query) =>
+        repository.listAiInteractions(query),
+      ),
+  }
+}
+
 export function parseCoreProjectDetailQuery(
   params: URLSearchParams,
   traceId = createTraceId("core"),
@@ -207,6 +260,19 @@ function listHandler<T>(
   }
 
   return ok(handler(parsed.value), traceId)
+}
+
+async function listHandlerAsync<T>(
+  params: URLSearchParams,
+  traceId: string,
+  handler: (query: CoreListQuery) => Promise<T>,
+) {
+  const parsed = parseCoreListQuery(params, traceId)
+  if (!parsed.ok) {
+    return parsed
+  }
+
+  return ok(await handler(parsed.value), traceId)
 }
 
 function ok<T>(value: T, traceId: string): CoreApiResult<T> {

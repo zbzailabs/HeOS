@@ -3,13 +3,31 @@
   "name": "heos",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/worker.ts",
   "routes": [
     {
       "pattern": "app.yunhe.ai",
       "custom_domain": true
     }
   ],
+  "triggers": {
+    "crons": ["*/15 * * * *"]
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "RENKE_SYNC_QUEUE",
+        "queue": "renke-sync-retry"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "renke-sync-retry",
+        "max_batch_size": 1,
+        "max_batch_timeout": 30
+      }
+    ]
+  },
   "d1_databases": [
     {
       "binding": "HEOS_DB",

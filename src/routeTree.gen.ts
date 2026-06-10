@@ -26,6 +26,7 @@ import { Route as ApiCoreAiInteractionsRouteImport } from './routes/api/core/ai-
 import { Route as ApiCoreAgriTasksRouteImport } from './routes/api/core/agri-tasks'
 import { Route as ApiComplianceChecklistRouteImport } from './routes/api/compliance/checklist'
 import { Route as ApiProvidersRenkeSyncRouteImport } from './routes/api/providers/renke/sync'
+import { Route as ApiProvidersRenkeReplayRouteImport } from './routes/api/providers/renke/replay'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -112,6 +113,11 @@ const ApiProvidersRenkeSyncRoute = ApiProvidersRenkeSyncRouteImport.update({
   path: '/api/providers/renke/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiProvidersRenkeReplayRoute = ApiProvidersRenkeReplayRouteImport.update({
+  id: '/api/providers/renke/replay',
+  path: '/api/providers/renke/replay',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
+  '/api/providers/renke/replay': typeof ApiProvidersRenkeReplayRoute
   '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
 }
 export interface FileRoutesByTo {
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
+  '/api/providers/renke/replay': typeof ApiProvidersRenkeReplayRoute
   '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
 }
 export interface FileRoutesById {
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
+  '/api/providers/renke/replay': typeof ApiProvidersRenkeReplayRoute
   '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
 }
 export interface FileRouteTypes {
@@ -190,6 +199,7 @@ export interface FileRouteTypes {
     | '/api/core/trace-archives'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
+    | '/api/providers/renke/replay'
     | '/api/providers/renke/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/api/core/trace-archives'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
+    | '/api/providers/renke/replay'
     | '/api/providers/renke/sync'
   id:
     | '__root__'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/api/core/trace-archives'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
+    | '/api/providers/renke/replay'
     | '/api/providers/renke/sync'
   fileRoutesById: FileRoutesById
 }
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   ApiCoreTraceArchivesRoute: typeof ApiCoreTraceArchivesRoute
   ApiTelemetryHistoryRoute: typeof ApiTelemetryHistoryRoute
   ApiTelemetryLatestRoute: typeof ApiTelemetryLatestRoute
+  ApiProvidersRenkeReplayRoute: typeof ApiProvidersRenkeReplayRoute
   ApiProvidersRenkeSyncRoute: typeof ApiProvidersRenkeSyncRoute
 }
 
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProvidersRenkeSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/providers/renke/replay': {
+      id: '/api/providers/renke/replay'
+      path: '/api/providers/renke/replay'
+      fullPath: '/api/providers/renke/replay'
+      preLoaderRoute: typeof ApiProvidersRenkeReplayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -392,6 +412,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCoreTraceArchivesRoute: ApiCoreTraceArchivesRoute,
   ApiTelemetryHistoryRoute: ApiTelemetryHistoryRoute,
   ApiTelemetryLatestRoute: ApiTelemetryLatestRoute,
+  ApiProvidersRenkeReplayRoute: ApiProvidersRenkeReplayRoute,
   ApiProvidersRenkeSyncRoute: ApiProvidersRenkeSyncRoute,
 }
 export const routeTree = rootRouteImport

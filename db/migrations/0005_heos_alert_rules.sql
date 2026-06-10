@@ -80,8 +80,8 @@ CREATE INDEX IF NOT EXISTS idx_heos_alerts_current_key
     status
   );
 
-CREATE INDEX IF NOT EXISTS idx_heos_alerts_tenant_status_triggered
-  ON heos_alerts (tenant_id, status, triggered_at);
+CREATE INDEX IF NOT EXISTS idx_heos_alerts_tenant_status_created
+  ON heos_alerts (tenant_id, status, created_at);
 
-CREATE INDEX IF NOT EXISTS idx_heos_alerts_device_triggered
-  ON heos_alerts (tenant_id, site_id, device_id, triggered_at);
+CREATE INDEX IF NOT EXISTS idx_heos_alerts_device_created
+  ON heos_alerts (tenant_id, site_id, device_id, created_at);

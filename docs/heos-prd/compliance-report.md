@@ -4,87 +4,121 @@
 
 ## 1. 汇总
 
-- 检查项：7
-- 已覆盖：7
+- 检查项：13
+- 已覆盖：13
+- 进行中：0
 - 未达标：0
 - 阻断项：0
 - 验收命令：`pnpm test`、`pnpm build`
 
-## 2. 检查明细
+## 2. 已覆盖检查明细
 
 ### S1-05 PRD 核心业务域 D1 模型
 
 - Issue：#32
-- Spec：PRD 1-5 与验收 2-8
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`docs/specs/S1-05-prd-core-domain-model.md`、`db/migrations/0004_heos_prd_core_domains.sql`、`src/domain/core/prd-model.ts`
-- 未达标原因：无
-- 后续计划：补齐 CRUD 页面、真实 D1 读写和运行链路。
+- 后续计划：通过 #37、#38 接入生产 D1 seed 与查询。
 
-### S2-01 标准化 Renke 同步 API
+### S2-06 Renke D1 同步与失败重试
 
-- Issue：#9
-- Spec：Spec 5.2 供应商同步入口
+- Issue：#35
 - 状态：已覆盖
 - 阻断发布：否
-- 证据：`src/domain/renke/sync.ts`、`src/routes/api/providers/renke/sync.ts`
-- 未达标原因：无
-- 后续计划：接入 D1 写入、Cron Triggers、Queues 和失败重试。
+- 证据：`docs/specs/S2-06-renke-d1-sync-retry.md`、`src/domain/renke/sync.ts`、`src/routes/api/providers/renke/sync.ts`
+- 后续计划：通过 #39 接入 Cron Triggers、Queues 和同步重放。
 
 ### S2-02 遥测查询 API
 
 - Issue：#10
-- Spec：Spec 5.2 遥测查询
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`src/domain/telemetry/api.ts`、`src/routes/api/telemetry/latest.ts`、`src/routes/api/telemetry/history.ts`
-- 未达标原因：无
-- 后续计划：生产环境切换为 D1 查询实现。
+- 后续计划：生产环境继续使用 D1 查询实现。
 
 ### S3-01 在线状态与离线告警前端展示
 
 - Issue：#12
-- Spec：Spec 5.1 在线判定、Spec 6.2
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`src/domain/alerts/offline.ts`、`src/routes/console.tsx`
-- 未达标原因：无
-- 后续计划：接入真实告警关闭、恢复和审计记录。
+- 后续计划：通过 #40 接入告警确认、处理、关闭和恢复记录。
 
 ### S3-02 标准稽核页
 
 - Issue：#13
-- Spec：Spec 5.2 标准稽核、Spec 6.1、Spec 7
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`src/domain/compliance/checklist.ts`、`src/routes/api/compliance/checklist.ts`、`src/routes/console.tsx`
-- 未达标原因：无
-- 后续计划：每次发布前导出快照进入交付记录。
+- 后续计划：通过 #41 将发布前快照进入交付记录。
 
 ### S4-01 发布冻结 compliance-report
 
 - Issue：#14
-- Spec：Spec 6.1、Spec 7、Spec 9
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`docs/heos-prd/compliance-report.md`
-- 未达标原因：无
-- 后续计划：发布前刷新验证结果和部署记录。
+- 后续计划：阶段结束前刷新验证结果和部署记录。
 
 ### S4-02 任务边界与验收命令固化
 
 - Issue：#15
-- Spec：Spec 1、Spec 6、Spec 9
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`docs/heos-prd/06-标准对齐任务清单-v0.1.md`、`docs/heos-prd/05-验收标准.md`
-- 未达标原因：无
 - 后续计划：Issue、文档和验收记录保持互相引用。
 
-## 3. 下一迭代目标
+## 3. 下一阶段进行中检查明细
 
-- 基于 S1-05 核心表补齐项目、作物、农事、追溯和 AI 页面。
-- 将演示数据切换为 D1 查询结果。
-- 将仁科同步接入 Cron Triggers、Queues 和失败重试。
-- 将告警关闭、恢复和审计记录接入真实业务表。
+### S0-04 下一阶段规格与生产验收基线
+
+- Issue：#36
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S0-04-next-stage-production-baseline.md`
+- 验收重点：规格、验收命令、线上核验清单、构建无 `.inputValidator()` 废弃警告。
+
+### S1-06 生产 D1 租户项目与种子数据
+
+- Issue：#37
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S1-06-production-d1-seed.md`、`db/seeds/0001_tenglong_smart_farm.sql`、`src/domain/core/seed.test.ts`
+- 验收重点：生产 D1 seed 幂等执行，腾龙小学智慧农场基础数据可查询。
+
+### S2-07 核心查询接口切换 D1 repository
+
+- Issue：#38
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S2-07-core-d1-query-api.md`、`src/domain/core/d1-query.ts`、`src/lib/core-api.ts`
+- 验收重点：核心 API 优先读取 `HEOS_DB`，保留租户隔离、分页、筛选和 traceId。
+
+### S2-08 Renke Cron Triggers、Queues 与同步重放
+
+- Issue：#39
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S2-08-renke-cron-queues-replay.md`、`wrangler.jsonc`、`src/routes/api/providers/renke/replay.ts`
+- 验收重点：Cron、队列消息、失败处理和最近同步状态。
+
+### S3-06 告警、农事、追溯和 AI 业务流程页面
+
+- Issue：#40
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S3-06-console-business-workflows.md`、`src/domain/console/workbench.ts`、`src/routes/console.tsx`
+- 验收重点：告警和农事状态流转、追溯公开边界、AI 来源记录、移动端无溢出。
+
+### S4-03 下一阶段发布验收与线上核验
+
+- Issue：#41
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S4-03-next-stage-release-verification.md`
+- 验收重点：线上关键路径、部署记录、GitHub Project 和飞书项目记录一致。
+
+## 4. 当前结论
+
+截至本报告版本，下一阶段无已识别发布阻断项。D1 migration、D1 seed、Queues、Workers 部署和线上关键路径核验结果进入 #41 交付记录。

@@ -107,6 +107,32 @@ export type RenkeRetryPlan =
       nextAttempt: number
     }
 
+export type RenkeSyncQueueMessage = {
+  provider: typeof renkeProviderId
+  tenantId: typeof renkeTenantId
+  deviceAddr: typeof renkeDeviceAddr
+  attempt: number
+  traceId: string
+}
+
+export type RenkeReplayPlan =
+  | {
+      ok: true
+      provider: typeof renkeProviderId
+      tenantId: typeof renkeTenantId
+      deviceAddr: typeof renkeDeviceAddr
+      traceId: string
+      fromTs: string
+      toTs: string
+    }
+  | {
+      ok: false
+      status: 400
+      code: "RENKE_REPLAY_INVALID_WINDOW"
+      message: string
+      traceId: string
+    }
+
 const renkeMetricMappings: readonly {
   patterns: readonly string[]
   metricCode: MetricCode
@@ -328,6 +354,45 @@ export function createRenkeRetryPlan(
     delaySeconds: Math.min(currentAttempt * 60, 300),
     nextAttempt,
     reason: failure.code,
+  }
+}
+
+export function createRenkeSyncQueueMessage(input: {
+  traceId: string
+  attempt?: number
+}): RenkeSyncQueueMessage {
+  return {
+    provider: renkeProviderId,
+    tenantId: renkeTenantId,
+    deviceAddr: renkeDeviceAddr,
+    attempt: input.attempt ?? 1,
+    traceId: input.traceId,
+  }
+}
+
+export function createRenkeReplayPlan(input: {
+  traceId: string
+  fromTs: string
+  toTs: string
+}): RenkeReplayPlan {
+  if (Date.parse(input.fromTs) > Date.parse(input.toTs)) {
+    return {
+      ok: false,
+      status: 400,
+      code: "RENKE_REPLAY_INVALID_WINDOW",
+      message: "fromTs must be earlier than or equal to toTs.",
+      traceId: input.traceId,
+    }
+  }
+
+  return {
+    ok: true,
+    provider: renkeProviderId,
+    tenantId: renkeTenantId,
+    deviceAddr: renkeDeviceAddr,
+    traceId: input.traceId,
+    fromTs: input.fromTs,
+    toTs: input.toTs,
   }
 }
 

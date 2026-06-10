@@ -4,7 +4,9 @@ import { metricCodes, syncStatuses, telemetryQualities } from "../standards/enum
 import {
   classifyRenkeClientError,
   createRenkeD1SyncRepository,
+  createRenkeReplayPlan,
   createRenkeRetryPlan,
+  createRenkeSyncQueueMessage,
   createRenkeSyncSummary,
   findRenkeDeviceByAddr,
   persistRenkeSyncToD1,
@@ -181,6 +183,49 @@ describe("renke sync normalization", () => {
       reason: syncStatuses.AUTH_TIMEOUT,
     })
     expect(createRenkeRetryPlan(failure, 3).shouldRetry).toBe(false)
+  })
+
+  it("creates queue messages and replay plans with stable trace context", () => {
+    expect(
+      createRenkeSyncQueueMessage({
+        traceId: "trace-renke",
+        attempt: 2,
+      }),
+    ).toEqual({
+      provider: "renke",
+      tenantId: "tenant-tenglong-school",
+      deviceAddr: "40406816",
+      attempt: 2,
+      traceId: "trace-renke",
+    })
+
+    expect(
+      createRenkeReplayPlan({
+        traceId: "trace-renke",
+        fromTs: "2026-06-10T00:00:00.000Z",
+        toTs: "2026-06-10T01:00:00.000Z",
+      }),
+    ).toEqual({
+      ok: true,
+      provider: "renke",
+      tenantId: "tenant-tenglong-school",
+      deviceAddr: "40406816",
+      traceId: "trace-renke",
+      fromTs: "2026-06-10T00:00:00.000Z",
+      toTs: "2026-06-10T01:00:00.000Z",
+    })
+
+    expect(
+      createRenkeReplayPlan({
+        traceId: "trace-renke",
+        fromTs: "2026-06-10T02:00:00.000Z",
+        toTs: "2026-06-10T01:00:00.000Z",
+      }),
+    ).toMatchObject({
+      ok: false,
+      status: 400,
+      code: "RENKE_REPLAY_INVALID_WINDOW",
+    })
   })
 })
 

@@ -140,7 +140,7 @@ export const getCurrentUser = createServerFn({
 export const signIn = createServerFn({
   method: 'POST',
 })
-  .inputValidator((input: LoginInput) => input)
+  .validator((input: LoginInput) => input)
   .handler(async ({ data }) => {
     const isValid = await verifyAdminCredentials(data)
     if (!isValid) {
@@ -181,4 +181,3 @@ export const signOut = createServerFn({
     ok: true,
   }
 })
-

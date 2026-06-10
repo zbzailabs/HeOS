@@ -101,4 +101,33 @@ describe("console data workbench", () => {
       expect.objectContaining({ cropName: "番茄", activeStage: "苗期" }),
     )
   })
+
+  it("exposes auditable business workflow states for S3-06", () => {
+    const workbench = getConsoleDataWorkbench()
+
+    expect(workbench.alertCenter.workflow.steps.map((step) => step.status)).toEqual([
+      "open",
+      "acknowledged",
+      "resolved",
+      "closed",
+    ])
+    expect(workbench.alertCenter.workflow.auditAction).toBe("alert.status.update")
+    expect(workbench.agriTasks.workflow.steps.map((step) => step.status)).toEqual([
+      "planned",
+      "doing",
+      "done",
+    ])
+    expect(workbench.agriTasks.workflow.auditAction).toBe("agri_task.status.update")
+    expect(workbench.traceArchives.publicFields).toEqual([
+      "project",
+      "crop",
+      "cycle",
+      "agriRecords",
+      "inspectionSummary",
+    ])
+    expect(workbench.aiAssistant.sourcePolicy).toMatchObject({
+      authorizedOnly: true,
+      auditAction: "ai.interaction.read",
+    })
+  })
 })
