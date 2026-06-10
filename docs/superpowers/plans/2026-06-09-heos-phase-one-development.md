@@ -85,11 +85,42 @@ HeOS 一期开发计划已完成梳理。
 ### M1: Standards and Data Foundation
 
 **Files:**
+- Create: `docs/specs/S0-01-standard-dictionary.md`
 - Create: `docs/specs/S0-02-unified-enums.md`
 - Create: `docs/specs/S0-03-admin-rbac-console.md`
+- Create: `db/migrations/0002_heos_standard_dictionary.sql`
+- Create: `src/domain/standards/dictionary.ts`
+- Create: `src/domain/standards/dictionary.test.ts`
 - Create: `src/domain/standards/enums.ts`
 - Create: `src/domain/standards/enums.test.ts`
 - Later tasks create D1 schema and persistence modules for dictionary, telemetry, alert, and audit records.
+
+- [x] **Task #4 Step 1: Write S0-01 spec**
+
+Create `docs/specs/S0-01-standard-dictionary.md` with the dictionary categories, fields, database constraints, change-record contract, structured error format, and validation commands.
+
+- [x] **Task #4 Step 2: Add D1 migration**
+
+Create `db/migrations/0002_heos_standard_dictionary.sql` with D1-compatible tables for `heos_standard_dictionary` and `heos_standard_dictionary_changes`, indexes, baseline seed data, and initial change records.
+
+- [x] **Task #4 Step 3: Add dictionary source**
+
+Create `src/domain/standards/dictionary.ts` with base entries for crops, growth stages, metrics, units, device capabilities, and alert levels. Provide code-table references, duplicate detection, enum consistency validation, and structured `400` error payloads.
+
+- [x] **Task #4 Step 4: Add focused tests**
+
+Create `src/domain/standards/dictionary.test.ts` covering required fields, uniqueness, metric and alert enum consistency, unit references, structured `400` errors, and D1 migration boundaries.
+
+- [x] **Task #4 Step 5: Validate and update Issue #4**
+
+Run:
+
+```bash
+pnpm test
+pnpm build
+```
+
+Post changed files, validation status, and remaining integration points to Issue #4.
 
 - [ ] **Task #5 Step 1: Write S0-02 spec**
 
