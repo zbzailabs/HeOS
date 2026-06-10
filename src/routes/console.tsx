@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
   Activity,
+  AlertTriangle,
   BarChart3,
   BookOpen,
   CheckCircle2,
   ChevronRight,
   Database,
+  Download,
+  FileCheck2,
   History,
   LayoutDashboard,
   Lock,
@@ -17,6 +20,8 @@ import {
   Sprout,
   Table2,
   Users,
+  Wifi,
+  WifiOff,
 } from 'lucide-react'
 import { getConsoleDataWorkbench } from '../domain/console/workbench'
 import {
@@ -187,6 +192,14 @@ function ConsolePage() {
             <TelemetryModelPanel telemetry={dataWorkbench.telemetry} />
           </section>
 
+          <section className="grid gap-4 pb-5 xl:grid-cols-[1fr_1fr]">
+            <RenkeDevicePanel
+              renke={dataWorkbench.renke}
+              deviceStatus={dataWorkbench.deviceStatus}
+            />
+            <CompliancePanel compliance={dataWorkbench.compliance} />
+          </section>
+
           <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5">
               <div className="flex items-start justify-between gap-3">
@@ -248,7 +261,8 @@ function ConsolePage() {
                 />
                 <StatusStep
                   title="业务页面"
-                  text="Renke 同步、HTTP 遥测 API、告警生成和业务 CRUD 页面继续按 Issue 推进。"
+                  text="Renke 同步、HTTP 遥测 API、离线告警和标准稽核已接入首屏；业务 CRUD 页面继续按 PRD 后续任务推进。"
+                  done
                 />
               </ol>
             </div>
@@ -256,6 +270,174 @@ function ConsolePage() {
         </section>
       </div>
     </main>
+  )
+}
+
+function RenkeDevicePanel({
+  renke,
+  deviceStatus,
+}: {
+  renke: ReturnType<typeof getConsoleDataWorkbench>['renke']
+  deviceStatus: ReturnType<typeof getConsoleDataWorkbench>['deviceStatus']
+}) {
+  return (
+    <div className="rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-[#2d7359]">
+            <RadioTower size={19} />
+            <h2 className="m-0 text-lg font-extrabold text-[#12383c]">
+              Renke 设备接入
+            </h2>
+          </div>
+          <p className="m-0 mt-2 text-sm leading-6 text-[#5b736d]">
+            供应商接口由服务端路由调用，凭据从环境变量读取。
+          </p>
+        </div>
+        <span className="rounded-lg bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]">
+          {renke.providerId}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <TelemetryFact
+          icon={<RadioTower size={17} />}
+          label="设备"
+          value={renke.deviceAddr}
+          detail={renke.syncEndpoint}
+        />
+        <TelemetryFact
+          icon={<Wifi size={17} />}
+          label="在线"
+          value={String(deviceStatus.onlineCount)}
+          detail={renke.latestEndpoint}
+        />
+        <TelemetryFact
+          icon={<WifiOff size={17} />}
+          label="离线"
+          value={String(deviceStatus.offlineCount)}
+          detail="5 分钟未上报"
+        />
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-lg border border-[#d7e6db]">
+        {deviceStatus.devices.map((device) => (
+          <div
+            key={device.deviceId}
+            className="grid gap-2 border-b border-[#d7e6db] bg-[#f8fcf9] px-3 py-3 text-sm last:border-b-0 sm:grid-cols-[1.2fr_0.8fr_0.8fr]"
+          >
+            <span className="font-extrabold text-[#12383c]">
+              {device.deviceName}
+            </span>
+            <span className="font-semibold text-[#5b736d]">
+              {device.lastSeenAt ?? '无数据'}
+            </span>
+            <span className="inline-flex w-fit items-center gap-1 rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#2d7359]">
+              {device.onlineStatus === 'offline' ? (
+                <WifiOff size={14} />
+              ) : (
+                <Wifi size={14} />
+              )}
+              {device.onlineStatus}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {deviceStatus.alerts.map((alert) => (
+          <div
+            key={alert.id}
+            className="rounded-lg border border-[#f0d49a] bg-[#fff8e8] px-3 py-2 text-sm font-bold leading-6 text-[#7a5a19]"
+          >
+            <span className="inline-flex items-center gap-2">
+              <AlertTriangle size={16} />
+              {alert.reason}
+            </span>
+            <span className="ml-2 font-semibold">触发：{alert.triggeredAt}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CompliancePanel({
+  compliance,
+}: {
+  compliance: ReturnType<typeof getConsoleDataWorkbench>['compliance']
+}) {
+  return (
+    <div className="rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-[#2d7359]">
+            <FileCheck2 size={19} />
+            <h2 className="m-0 text-lg font-extrabold text-[#12383c]">
+              标准稽核
+            </h2>
+          </div>
+          <p className="m-0 mt-2 text-sm leading-6 text-[#5b736d]">
+            稽核项追溯到 Spec 条目和 GitHub Issue，当前无发布阻断项。
+          </p>
+        </div>
+        <a
+          href="/api/compliance/checklist?format=markdown"
+          className="inline-flex items-center gap-2 rounded-lg border border-[#c8ddd0] bg-white px-3 py-2 text-sm font-bold text-[#12383c] no-underline transition hover:bg-[#f7fbf8]"
+        >
+          <Download size={16} />
+          导出快照
+        </a>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-4">
+        <TelemetryFact
+          icon={<FileCheck2 size={17} />}
+          label="检查项"
+          value={String(compliance.total)}
+          detail={compliance.generatedAt}
+        />
+        <TelemetryFact
+          icon={<CheckCircle2 size={17} />}
+          label="已覆盖"
+          value={String(compliance.covered)}
+          detail="covered"
+        />
+        <TelemetryFact
+          icon={<AlertTriangle size={17} />}
+          label="缺口"
+          value={String(compliance.gaps)}
+          detail="gap"
+        />
+        <TelemetryFact
+          icon={<Lock size={17} />}
+          label="阻断"
+          value={String(compliance.blockers)}
+          detail="blocker"
+        />
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {compliance.items.map((item) => (
+          <div
+            key={item.id}
+            className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-extrabold text-[#12383c]">
+                {item.id} {item.title}
+              </span>
+              <span className="rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#2d7359]">
+                {item.issue} / {item.status}
+              </span>
+            </div>
+            <p className="m-0 mt-2 text-xs font-semibold leading-5 text-[#6c817b]">
+              {item.specRef}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 

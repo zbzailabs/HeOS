@@ -15,6 +15,10 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoPrismaRouteImport } from './routes/demo/prisma'
 import { Route as DemoNeonRouteImport } from './routes/demo/neon'
+import { Route as ApiTelemetryLatestRouteImport } from './routes/api/telemetry/latest'
+import { Route as ApiTelemetryHistoryRouteImport } from './routes/api/telemetry/history'
+import { Route as ApiComplianceChecklistRouteImport } from './routes/api/compliance/checklist'
+import { Route as ApiProvidersRenkeSyncRouteImport } from './routes/api/providers/renke/sync'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -46,6 +50,26 @@ const DemoNeonRoute = DemoNeonRouteImport.update({
   path: '/demo/neon',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTelemetryLatestRoute = ApiTelemetryLatestRouteImport.update({
+  id: '/api/telemetry/latest',
+  path: '/api/telemetry/latest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTelemetryHistoryRoute = ApiTelemetryHistoryRouteImport.update({
+  id: '/api/telemetry/history',
+  path: '/api/telemetry/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiComplianceChecklistRoute = ApiComplianceChecklistRouteImport.update({
+  id: '/api/compliance/checklist',
+  path: '/api/compliance/checklist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProvidersRenkeSyncRoute = ApiProvidersRenkeSyncRouteImport.update({
+  id: '/api/providers/renke/sync',
+  path: '/api/providers/renke/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +78,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
+  '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
+  '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
+  '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
+  '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +90,10 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
+  '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
+  '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
+  '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
+  '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +103,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
+  '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
+  '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
+  '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
+  '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,8 +117,22 @@ export interface FileRouteTypes {
     | '/login'
     | '/demo/neon'
     | '/demo/prisma'
+    | '/api/compliance/checklist'
+    | '/api/telemetry/history'
+    | '/api/telemetry/latest'
+    | '/api/providers/renke/sync'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/console' | '/login' | '/demo/neon' | '/demo/prisma'
+  to:
+    | '/'
+    | '/about'
+    | '/console'
+    | '/login'
+    | '/demo/neon'
+    | '/demo/prisma'
+    | '/api/compliance/checklist'
+    | '/api/telemetry/history'
+    | '/api/telemetry/latest'
+    | '/api/providers/renke/sync'
   id:
     | '__root__'
     | '/'
@@ -91,6 +141,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/demo/neon'
     | '/demo/prisma'
+    | '/api/compliance/checklist'
+    | '/api/telemetry/history'
+    | '/api/telemetry/latest'
+    | '/api/providers/renke/sync'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -100,6 +154,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   DemoNeonRoute: typeof DemoNeonRoute
   DemoPrismaRoute: typeof DemoPrismaRoute
+  ApiComplianceChecklistRoute: typeof ApiComplianceChecklistRoute
+  ApiTelemetryHistoryRoute: typeof ApiTelemetryHistoryRoute
+  ApiTelemetryLatestRoute: typeof ApiTelemetryLatestRoute
+  ApiProvidersRenkeSyncRoute: typeof ApiProvidersRenkeSyncRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -146,6 +204,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoNeonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/telemetry/latest': {
+      id: '/api/telemetry/latest'
+      path: '/api/telemetry/latest'
+      fullPath: '/api/telemetry/latest'
+      preLoaderRoute: typeof ApiTelemetryLatestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/telemetry/history': {
+      id: '/api/telemetry/history'
+      path: '/api/telemetry/history'
+      fullPath: '/api/telemetry/history'
+      preLoaderRoute: typeof ApiTelemetryHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/compliance/checklist': {
+      id: '/api/compliance/checklist'
+      path: '/api/compliance/checklist'
+      fullPath: '/api/compliance/checklist'
+      preLoaderRoute: typeof ApiComplianceChecklistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/providers/renke/sync': {
+      id: '/api/providers/renke/sync'
+      path: '/api/providers/renke/sync'
+      fullPath: '/api/providers/renke/sync'
+      preLoaderRoute: typeof ApiProvidersRenkeSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -156,6 +242,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   DemoNeonRoute: DemoNeonRoute,
   DemoPrismaRoute: DemoPrismaRoute,
+  ApiComplianceChecklistRoute: ApiComplianceChecklistRoute,
+  ApiTelemetryHistoryRoute: ApiTelemetryHistoryRoute,
+  ApiTelemetryLatestRoute: ApiTelemetryLatestRoute,
+  ApiProvidersRenkeSyncRoute: ApiProvidersRenkeSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -11,6 +11,14 @@ import {
   normalizeTelemetrySample,
   telemetryTables,
 } from "../telemetry/model"
+import { getDeviceStatusDashboard } from "../alerts/offline"
+import { getComplianceChecklist } from "../compliance/checklist"
+import {
+  renkeDeviceAddr,
+  renkeProviderId,
+  renkeSiteId,
+  renkeTenantId,
+} from "../renke/sync"
 
 export const heosD1Binding = {
   binding: "HEOS_DB",
@@ -79,6 +87,29 @@ export function getConsoleDataWorkbench() {
     },
   )
 
+  const deviceStatus = getDeviceStatusDashboard(
+    [
+      {
+        tenantId: renkeTenantId,
+        siteId: renkeSiteId,
+        deviceId: renkeDeviceAddr,
+        deviceName: "腾龙小学智慧农场 40406816",
+        supplierStatus: "online",
+        lastSeenAt: "2026-06-10T07:58:00.000Z",
+      },
+      {
+        tenantId: renkeTenantId,
+        siteId: renkeSiteId,
+        deviceId: "rk-offline-demo",
+        deviceName: "离线规则演示设备",
+        supplierStatus: "offline",
+        lastSeenAt: "2026-06-10T07:40:00.000Z",
+      },
+    ],
+    "2026-06-10T08:00:00.000Z",
+  )
+  const compliance = getComplianceChecklist("2026-06-10T08:00:00.000Z")
+
   return {
     dictionary: {
       version: standardDictionaryVersion,
@@ -95,8 +126,18 @@ export function getConsoleDataWorkbench() {
       sampleLatest: sampleWritePlan.latest.record,
       sampleHistoryQuery: sampleHistoryQuery.value,
       emptyState:
-        "Renke 同步和 HTTP 遥测 API 尚未接入，当前展示模型状态和示例数据。",
+        "HTTP 遥测 API 已接入演示数据，生产环境下一步接入 D1 查询。",
     },
+    renke: {
+      providerId: renkeProviderId,
+      deviceAddr: renkeDeviceAddr,
+      syncEndpoint: "/api/providers/renke/sync",
+      latestEndpoint: "/api/telemetry/latest",
+      historyEndpoint: "/api/telemetry/history",
+      credentialMode: "server-env",
+    },
+    deviceStatus,
+    compliance,
     d1: {
       ...heosD1Binding,
       migrations: heosD1Migrations,
