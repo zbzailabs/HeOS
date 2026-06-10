@@ -22,6 +22,8 @@ export const heosD1Migrations = [
   "0001_heos_rbac_core.sql",
   "0002_heos_standard_dictionary.sql",
   "0003_heos_telemetry_core.sql",
+  "0004_heos_alert_rules.sql",
+  "0005_heos_audit_standard_fields.sql",
 ] as const
 
 const categoryLabels = {
