@@ -56,6 +56,22 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     plan: "继续接入 D1 写入和 Cron 触发。",
   },
   {
+    id: "S2-05",
+    title: "PRD 核心域查询 API",
+    specRef: "PRD 1-5 与技术架构 5.2",
+    issue: "#33",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S2-05-core-domain-query-api.md",
+      "src/domain/core/query.ts",
+      "src/domain/core/api.ts",
+      "src/routes/api/core/devices.ts",
+    ],
+    gap: null,
+    plan: "后续将内存 repository 切换为 D1 repository。",
+  },
+  {
     id: "S2-02",
     title: "遥测查询 API",
     specRef: "Spec 5.2 遥测查询",

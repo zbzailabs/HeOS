@@ -17,6 +17,13 @@ import { Route as DemoPrismaRouteImport } from './routes/demo/prisma'
 import { Route as DemoNeonRouteImport } from './routes/demo/neon'
 import { Route as ApiTelemetryLatestRouteImport } from './routes/api/telemetry/latest'
 import { Route as ApiTelemetryHistoryRouteImport } from './routes/api/telemetry/history'
+import { Route as ApiCoreTraceArchivesRouteImport } from './routes/api/core/trace-archives'
+import { Route as ApiCoreProjectRouteImport } from './routes/api/core/project'
+import { Route as ApiCoreDevicesRouteImport } from './routes/api/core/devices'
+import { Route as ApiCoreDashboardRouteImport } from './routes/api/core/dashboard'
+import { Route as ApiCoreAlertsRouteImport } from './routes/api/core/alerts'
+import { Route as ApiCoreAiInteractionsRouteImport } from './routes/api/core/ai-interactions'
+import { Route as ApiCoreAgriTasksRouteImport } from './routes/api/core/agri-tasks'
 import { Route as ApiComplianceChecklistRouteImport } from './routes/api/compliance/checklist'
 import { Route as ApiProvidersRenkeSyncRouteImport } from './routes/api/providers/renke/sync'
 
@@ -60,6 +67,41 @@ const ApiTelemetryHistoryRoute = ApiTelemetryHistoryRouteImport.update({
   path: '/api/telemetry/history',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCoreTraceArchivesRoute = ApiCoreTraceArchivesRouteImport.update({
+  id: '/api/core/trace-archives',
+  path: '/api/core/trace-archives',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoreProjectRoute = ApiCoreProjectRouteImport.update({
+  id: '/api/core/project',
+  path: '/api/core/project',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoreDevicesRoute = ApiCoreDevicesRouteImport.update({
+  id: '/api/core/devices',
+  path: '/api/core/devices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoreDashboardRoute = ApiCoreDashboardRouteImport.update({
+  id: '/api/core/dashboard',
+  path: '/api/core/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoreAlertsRoute = ApiCoreAlertsRouteImport.update({
+  id: '/api/core/alerts',
+  path: '/api/core/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoreAiInteractionsRoute = ApiCoreAiInteractionsRouteImport.update({
+  id: '/api/core/ai-interactions',
+  path: '/api/core/ai-interactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoreAgriTasksRoute = ApiCoreAgriTasksRouteImport.update({
+  id: '/api/core/agri-tasks',
+  path: '/api/core/agri-tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiComplianceChecklistRoute = ApiComplianceChecklistRouteImport.update({
   id: '/api/compliance/checklist',
   path: '/api/compliance/checklist',
@@ -79,6 +121,13 @@ export interface FileRoutesByFullPath {
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
+  '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
+  '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
+  '/api/core/alerts': typeof ApiCoreAlertsRoute
+  '/api/core/dashboard': typeof ApiCoreDashboardRoute
+  '/api/core/devices': typeof ApiCoreDevicesRoute
+  '/api/core/project': typeof ApiCoreProjectRoute
+  '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
   '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
@@ -91,6 +140,13 @@ export interface FileRoutesByTo {
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
+  '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
+  '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
+  '/api/core/alerts': typeof ApiCoreAlertsRoute
+  '/api/core/dashboard': typeof ApiCoreDashboardRoute
+  '/api/core/devices': typeof ApiCoreDevicesRoute
+  '/api/core/project': typeof ApiCoreProjectRoute
+  '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
   '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
@@ -104,6 +160,13 @@ export interface FileRoutesById {
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
+  '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
+  '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
+  '/api/core/alerts': typeof ApiCoreAlertsRoute
+  '/api/core/dashboard': typeof ApiCoreDashboardRoute
+  '/api/core/devices': typeof ApiCoreDevicesRoute
+  '/api/core/project': typeof ApiCoreProjectRoute
+  '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
   '/api/providers/renke/sync': typeof ApiProvidersRenkeSyncRoute
@@ -118,6 +181,13 @@ export interface FileRouteTypes {
     | '/demo/neon'
     | '/demo/prisma'
     | '/api/compliance/checklist'
+    | '/api/core/agri-tasks'
+    | '/api/core/ai-interactions'
+    | '/api/core/alerts'
+    | '/api/core/dashboard'
+    | '/api/core/devices'
+    | '/api/core/project'
+    | '/api/core/trace-archives'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
     | '/api/providers/renke/sync'
@@ -130,6 +200,13 @@ export interface FileRouteTypes {
     | '/demo/neon'
     | '/demo/prisma'
     | '/api/compliance/checklist'
+    | '/api/core/agri-tasks'
+    | '/api/core/ai-interactions'
+    | '/api/core/alerts'
+    | '/api/core/dashboard'
+    | '/api/core/devices'
+    | '/api/core/project'
+    | '/api/core/trace-archives'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
     | '/api/providers/renke/sync'
@@ -142,6 +219,13 @@ export interface FileRouteTypes {
     | '/demo/neon'
     | '/demo/prisma'
     | '/api/compliance/checklist'
+    | '/api/core/agri-tasks'
+    | '/api/core/ai-interactions'
+    | '/api/core/alerts'
+    | '/api/core/dashboard'
+    | '/api/core/devices'
+    | '/api/core/project'
+    | '/api/core/trace-archives'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
     | '/api/providers/renke/sync'
@@ -155,6 +239,13 @@ export interface RootRouteChildren {
   DemoNeonRoute: typeof DemoNeonRoute
   DemoPrismaRoute: typeof DemoPrismaRoute
   ApiComplianceChecklistRoute: typeof ApiComplianceChecklistRoute
+  ApiCoreAgriTasksRoute: typeof ApiCoreAgriTasksRoute
+  ApiCoreAiInteractionsRoute: typeof ApiCoreAiInteractionsRoute
+  ApiCoreAlertsRoute: typeof ApiCoreAlertsRoute
+  ApiCoreDashboardRoute: typeof ApiCoreDashboardRoute
+  ApiCoreDevicesRoute: typeof ApiCoreDevicesRoute
+  ApiCoreProjectRoute: typeof ApiCoreProjectRoute
+  ApiCoreTraceArchivesRoute: typeof ApiCoreTraceArchivesRoute
   ApiTelemetryHistoryRoute: typeof ApiTelemetryHistoryRoute
   ApiTelemetryLatestRoute: typeof ApiTelemetryLatestRoute
   ApiProvidersRenkeSyncRoute: typeof ApiProvidersRenkeSyncRoute
@@ -218,6 +309,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTelemetryHistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/core/trace-archives': {
+      id: '/api/core/trace-archives'
+      path: '/api/core/trace-archives'
+      fullPath: '/api/core/trace-archives'
+      preLoaderRoute: typeof ApiCoreTraceArchivesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/core/project': {
+      id: '/api/core/project'
+      path: '/api/core/project'
+      fullPath: '/api/core/project'
+      preLoaderRoute: typeof ApiCoreProjectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/core/devices': {
+      id: '/api/core/devices'
+      path: '/api/core/devices'
+      fullPath: '/api/core/devices'
+      preLoaderRoute: typeof ApiCoreDevicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/core/dashboard': {
+      id: '/api/core/dashboard'
+      path: '/api/core/dashboard'
+      fullPath: '/api/core/dashboard'
+      preLoaderRoute: typeof ApiCoreDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/core/alerts': {
+      id: '/api/core/alerts'
+      path: '/api/core/alerts'
+      fullPath: '/api/core/alerts'
+      preLoaderRoute: typeof ApiCoreAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/core/ai-interactions': {
+      id: '/api/core/ai-interactions'
+      path: '/api/core/ai-interactions'
+      fullPath: '/api/core/ai-interactions'
+      preLoaderRoute: typeof ApiCoreAiInteractionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/core/agri-tasks': {
+      id: '/api/core/agri-tasks'
+      path: '/api/core/agri-tasks'
+      fullPath: '/api/core/agri-tasks'
+      preLoaderRoute: typeof ApiCoreAgriTasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/compliance/checklist': {
       id: '/api/compliance/checklist'
       path: '/api/compliance/checklist'
@@ -243,6 +383,13 @@ const rootRouteChildren: RootRouteChildren = {
   DemoNeonRoute: DemoNeonRoute,
   DemoPrismaRoute: DemoPrismaRoute,
   ApiComplianceChecklistRoute: ApiComplianceChecklistRoute,
+  ApiCoreAgriTasksRoute: ApiCoreAgriTasksRoute,
+  ApiCoreAiInteractionsRoute: ApiCoreAiInteractionsRoute,
+  ApiCoreAlertsRoute: ApiCoreAlertsRoute,
+  ApiCoreDashboardRoute: ApiCoreDashboardRoute,
+  ApiCoreDevicesRoute: ApiCoreDevicesRoute,
+  ApiCoreProjectRoute: ApiCoreProjectRoute,
+  ApiCoreTraceArchivesRoute: ApiCoreTraceArchivesRoute,
   ApiTelemetryHistoryRoute: ApiTelemetryHistoryRoute,
   ApiTelemetryLatestRoute: ApiTelemetryLatestRoute,
   ApiProvidersRenkeSyncRoute: ApiProvidersRenkeSyncRoute,
