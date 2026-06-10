@@ -45,6 +45,32 @@ function createSessionCookie() {
 }
 
 test.describe('HeOS console rendered measurement', () => {
+  test.describe.configure({ mode: 'serial' })
+
+  test('routes authenticated root visits to console instead of demo', async ({
+    context,
+    page,
+  }) => {
+    await context.addCookies([
+      {
+        name: 'heos_session',
+        value: createSessionCookie(),
+        domain: '127.0.0.1',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+        expires: Math.floor(Date.now() / 1000) + 60 * 60,
+      },
+    ])
+
+    await page.goto('/')
+
+    await expect(page).toHaveURL(/\/console$/)
+    await expect(page.getByRole('heading', { name: '后台管理工作台' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '主业务页面' })).toBeVisible()
+    await expect(page.locator('body')).not.toContainText('现场作业中枢')
+  })
+
   test('renders console and supports sign-out navigation', async ({
     context,
     page,
