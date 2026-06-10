@@ -86,6 +86,7 @@ HeOS 一期开发计划已完成梳理。
 
 **Files:**
 - Create: `docs/specs/S0-02-unified-enums.md`
+- Create: `docs/specs/S0-03-admin-rbac-console.md`
 - Create: `src/domain/standards/enums.ts`
 - Create: `src/domain/standards/enums.test.ts`
 - Later tasks create D1 schema and persistence modules for dictionary, telemetry, alert, and audit records.
@@ -114,6 +115,18 @@ pnpm build
 - [ ] **Task #5 Step 5: Update Issue #5**
 
 Post a GitHub comment with changed files, validation status, and remaining integration points.
+
+- [ ] **Task S0-03 Step 1: Write admin RBAC and console shell spec**
+
+Create `docs/specs/S0-03-admin-rbac-console.md` to define the HeOS permission-management and console-shell boundary. Reference RuoYi for mature RBAC concepts and soybean-admin for admin-console layout and permission-route concepts, while keeping HeOS on TanStack Start, React, Tailwind CSS, shadcn/ui dependencies, and Cloudflare-first runtime.
+
+- [ ] **Task S0-03 Step 2: Create issue for admin RBAC and console shell**
+
+Create a GitHub Issue that records:
+
+- Reference scope: RuoYi data model concepts, soybean-admin console-layout and permission-route concepts.
+- Excluded scope: Java/Spring/MyBatis/Shiro, Vue/Pinia/NaiveUI/UnoCSS, generic CRUD generator migration.
+- Acceptance: future work includes `Tenant`, `OrgUnit`, `User`, `Role`, `Menu`, `Permission`, `DataScope`, `AuditLog`, `/console` shell, service-side permission checks, service-side menu filtering, and current public demo retention.
 
 ### M2: Alerting and Rules
 
@@ -159,4 +172,3 @@ Post a GitHub comment with changed files, validation status, and remaining integ
 - Do not turn Prisma/Neon into the phase-one default database without a written architecture review.
 - Do not close P0 Issues until tests and build have been run in an explicit validation step.
 - Do not mark release-ready while any S0 or S1 issue remains open.
-
