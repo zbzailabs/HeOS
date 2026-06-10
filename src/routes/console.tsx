@@ -481,6 +481,10 @@ function AgriTasksPanel({
       badge={`${agriTasks.items.length}/${agriTasks.total}`}
     >
       <FilterRow labels={['status: planned']} />
+      <WorkflowStrip
+        labels={agriTasks.workflow.steps.map((step) => step.label)}
+        footer={`${agriTasks.workflow.permissionCode} / ${agriTasks.workflow.auditAction}`}
+      />
       <div className="mt-3 space-y-2">
         {agriTasks.items.length > 0 ? (
           agriTasks.items.map((task) => (
@@ -513,6 +517,10 @@ function AlertCenterPanel({
       badge={`${alertCenter.items.length}/${alertCenter.total}`}
     >
       <FilterRow labels={['status: open']} />
+      <WorkflowStrip
+        labels={alertCenter.workflow.steps.map((step) => step.label)}
+        footer={`${alertCenter.workflow.permissionCode} / ${alertCenter.workflow.auditAction}`}
+      />
       <div className="mt-3 space-y-2">
         {alertCenter.items.length > 0 ? (
           alertCenter.items.map((alert) => (
@@ -545,6 +553,7 @@ function TraceArchivesPanel({
       badge={`${traceArchives.items.length}/${traceArchives.total}`}
     >
       <FilterRow labels={['visibility: public']} />
+      <FilterRow labels={traceArchives.publicFields.map((field) => `public: ${field}`)} />
       <div className="mt-3 space-y-2">
         {traceArchives.items.length > 0 ? (
           traceArchives.items.map((archive) => (
@@ -580,6 +589,15 @@ function AiAssistantPanel({
       badge={`${aiAssistant.items.length}/${aiAssistant.total}`}
     >
       <div className="grid gap-2 md:grid-cols-2">
+        <div className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3 md:col-span-2">
+          <p className="m-0 text-xs font-extrabold text-[#2d7359]">
+            {aiAssistant.sourcePolicy.auditAction}
+          </p>
+          <p className="m-0 mt-1 text-xs font-semibold leading-5 text-[#6c817b]">
+            仅引用授权数据：{aiAssistant.sourcePolicy.authorizedOnly ? '是' : '否'}；
+            来源记录：{aiAssistant.sourcePolicy.sourceRequired ? '必填' : '未启用'}
+          </p>
+        </div>
         {aiAssistant.items.length > 0 ? (
           aiAssistant.items.map((interaction) => (
             <ListRow
@@ -595,6 +613,32 @@ function AiAssistantPanel({
       </div>
       <PaginationBar total={aiAssistant.total} nextCursor={aiAssistant.nextCursor} />
     </BusinessPanel>
+  )
+}
+
+function WorkflowStrip({
+  labels,
+  footer,
+}: {
+  labels: string[]
+  footer: string
+}) {
+  return (
+    <div className="mt-3 rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3">
+      <div className="flex flex-wrap gap-2">
+        {labels.map((label) => (
+          <span
+            key={label}
+            className="rounded-lg bg-white px-3 py-1 text-xs font-extrabold text-[#2d7359]"
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+      <p className="m-0 mt-2 break-words text-xs font-semibold leading-5 text-[#6c817b]">
+        {footer}
+      </p>
+    </div>
   )
 }
 

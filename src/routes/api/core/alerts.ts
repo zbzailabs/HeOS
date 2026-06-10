@@ -1,24 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { json } from "@tanstack/react-start"
 
-import { createCoreApiHandlers } from "../../../domain/core/api"
-
-const handlers = createCoreApiHandlers()
+import { handleCoreApiRequest } from "../../../lib/core-api"
 
 export const Route = createFileRoute("/api/core/alerts")({
   server: {
     handlers: {
-      GET: ({ request }) => {
-        const url = new URL(request.url)
-        const result = handlers.alerts(url.searchParams)
-
-        return json(
-          result.ok
-            ? { traceId: result.traceId, data: result.value }
-            : { traceId: result.traceId, errors: result.errors },
-          { status: result.status },
-        )
-      },
+      GET: ({ request }) => handleCoreApiRequest("alerts", request),
     },
   },
 })

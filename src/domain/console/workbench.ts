@@ -142,6 +142,41 @@ const cropModels = {
   emptyState: "当前项目已有作物模型，后续接入 D1 后展示全部品种。",
 }
 
+const alertWorkflow = {
+  auditAction: "alert.status.update",
+  permissionCode: "alert:update",
+  steps: [
+    { status: "open", label: "开放" },
+    { status: "acknowledged", label: "确认" },
+    { status: "resolved", label: "处理" },
+    { status: "closed", label: "关闭" },
+  ],
+}
+
+const agriTaskWorkflow = {
+  auditAction: "agri_task.status.update",
+  permissionCode: "agri-task:update",
+  steps: [
+    { status: "planned", label: "计划" },
+    { status: "doing", label: "执行" },
+    { status: "done", label: "验收" },
+  ],
+}
+
+const tracePublicFields = [
+  "project",
+  "crop",
+  "cycle",
+  "agriRecords",
+  "inspectionSummary",
+] as const
+
+const aiSourcePolicy = {
+  authorizedOnly: true,
+  auditAction: "ai.interaction.read",
+  sourceRequired: true,
+}
+
 export function getConsoleDataWorkbench() {
   const categorySummaries = Object.values(standardDictionaryCategories).map(
     (category) => {
@@ -241,13 +276,23 @@ export function getConsoleDataWorkbench() {
     projectAssets,
     deviceLedger,
     cropModels,
-    agriTasks,
-    alertCenter,
+    agriTasks: {
+      ...agriTasks,
+      workflow: agriTaskWorkflow,
+    },
+    alertCenter: {
+      ...alertCenter,
+      workflow: alertWorkflow,
+    },
     traceArchives: {
       ...traceArchives,
       items: traceArchives.items.filter((archive) => archive.visibility === "public"),
+      publicFields: tracePublicFields,
     },
-    aiAssistant,
+    aiAssistant: {
+      ...aiAssistant,
+      sourcePolicy: aiSourcePolicy,
+    },
     dictionary: {
       version: standardDictionaryVersion,
       totalEntries: baseStandardDictionaryEntries.length,

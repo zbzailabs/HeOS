@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   createCoreApiHandlers,
+  defaultCoreProjectId,
   defaultCoreQuerySeed,
   parseCoreProjectDetailQuery,
 } from "./api"
@@ -73,7 +74,7 @@ describe("core API handlers", () => {
     const project = handlers.projectDetail(
       new URLSearchParams({
         tenantId: "tenant-tenglong-school",
-        projectId: "project-tenglong",
+        projectId: defaultCoreProjectId,
       }),
       "trace-test",
     )

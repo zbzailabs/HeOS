@@ -5,6 +5,7 @@ import {
   classifyRenkeClientError,
   createRenkeD1SyncRepository,
   createRenkeRetryPlan,
+  createRenkeSyncQueueMessage,
   createRenkeSyncSummary,
   findRenkeDeviceByAddr,
   persistRenkeSyncToD1,
@@ -77,12 +78,20 @@ export const Route = createFileRoute("/api/providers/renke/sync")({
           const failure = classifyRenkeClientError(error)
           const finishedAt = new Date().toISOString()
           const retry = createRenkeRetryPlan(failure, 1)
+          const queueMessage = createRenkeSyncQueueMessage({
+            traceId,
+            attempt: retry.nextAttempt,
+          })
+          const queueResult = retry.shouldRetry
+            ? await sendRetryMessageIfAvailable(queueMessage, retry.delaySeconds)
+            : { status: "skipped" as const }
           const persistence = await recordFailureIfD1Available({
             traceId,
             startedAt,
             finishedAt,
             failure,
-            queueMessageId: retry.shouldRetry ? retry.queueName : null,
+            queueMessageId:
+              queueResult.status === "sent" ? queueMessage.traceId : null,
           })
 
           return json(
@@ -97,6 +106,8 @@ export const Route = createFileRoute("/api/providers/renke/sync")({
                 samples: [],
                 failures: [failure],
                 retry,
+                queueMessage,
+                queueResult,
                 persistence,
               },
             },
@@ -169,6 +180,29 @@ async function fetchRenkeSyncInput(): Promise<RenkeSyncSuccessInput> {
     targetDevice,
     realtimeDevices: mergedRealtimeDevices,
   }
+}
+
+async function sendRetryMessageIfAvailable(
+  message: ReturnType<typeof createRenkeSyncQueueMessage>,
+  delaySeconds: number,
+) {
+  const renkeEnv = env as {
+    RENKE_SYNC_QUEUE?: {
+      send(
+        body: unknown,
+        options?: {
+          delaySeconds?: number
+        },
+      ): Promise<void>
+    }
+  }
+
+  if (!renkeEnv.RENKE_SYNC_QUEUE) {
+    return { status: "not_configured" as const }
+  }
+
+  await renkeEnv.RENKE_SYNC_QUEUE.send(message, { delaySeconds })
+  return { status: "sent" as const }
 }
 
 async function fetchRenkeDeviceList(

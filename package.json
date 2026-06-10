@@ -16,6 +16,7 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
     "db:studio": "dotenv -e .env.local -- prisma studio",
     "db:seed": "dotenv -e .env.local -- prisma db seed",
+    "d1:seed:tenglong": "wrangler d1 execute heos --remote --file db/seeds/0001_tenglong_smart_farm.sql",
     "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
