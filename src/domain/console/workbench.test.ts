@@ -68,4 +68,37 @@ describe("console data workbench", () => {
       workbench.prdCoverage.domains.every((domain) => domain.prdRefs.length > 0),
     ).toBe(true)
   })
+
+  it("exposes PRD business pages backed by core query results", () => {
+    const workbench = getConsoleDataWorkbench()
+
+    expect(workbench.businessPages.map((page) => page.id)).toEqual([
+      "project-assets",
+      "device-ledger",
+      "crop-models",
+      "agri-tasks",
+      "alert-center",
+      "trace-archives",
+      "ai-assistant",
+    ])
+    expect(workbench.projectAssets.project?.name).toBe("腾龙小学智慧农场")
+    expect(workbench.deviceLedger.items).toHaveLength(1)
+    expect(workbench.deviceLedger.total).toBe(2)
+    expect(workbench.deviceLedger.nextCursor).toBe("device-renke-40406816")
+    expect(workbench.alertCenter.items.every((alert) => alert.status === "open")).toBe(
+      true,
+    )
+    expect(workbench.agriTasks.items.every((task) => task.status === "planned")).toBe(
+      true,
+    )
+    expect(
+      workbench.traceArchives.items.every(
+        (archive) => archive.visibility === "public",
+      ),
+    ).toBe(true)
+    expect(workbench.aiAssistant.items).toHaveLength(1)
+    expect(workbench.cropModels.items).toContainEqual(
+      expect.objectContaining({ cropName: "番茄", activeStage: "苗期" }),
+    )
+  })
 })

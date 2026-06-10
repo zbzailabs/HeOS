@@ -13,6 +13,11 @@ import {
 } from "../telemetry/model"
 import { getDeviceStatusDashboard } from "../alerts/offline"
 import { getComplianceChecklist } from "../compliance/checklist"
+import {
+  createCoreApiHandlers,
+  defaultCoreProjectId,
+  defaultCoreTenantId,
+} from "../core/api"
 import { getPrdCoverageSummary, prdDomainCoverage } from "../core/prd-model"
 import {
   renkeDeviceAddr,
@@ -73,6 +78,68 @@ if (!sampleHistoryQuery.ok) {
   throw new Error("S3-04 sample history query must be valid")
 }
 
+const businessPages = [
+  {
+    id: "project-assets",
+    title: "项目资产",
+    description: "项目、基地、地块、大棚和现场设备资产。",
+    href: "#project-assets",
+  },
+  {
+    id: "device-ledger",
+    title: "设备台账",
+    description: "设备在线状态、供应商编号、基地筛选和分页游标。",
+    href: "#device-ledger",
+  },
+  {
+    id: "crop-models",
+    title: "作物模型",
+    description: "作物品种、生育阶段和当前生产周期。",
+    href: "#crop-models",
+  },
+  {
+    id: "agri-tasks",
+    title: "农事任务",
+    description: "按状态筛选的农事计划和执行记录入口。",
+    href: "#agri-tasks",
+  },
+  {
+    id: "alert-center",
+    title: "告警中心",
+    description: "开放告警、设备关联和原因说明。",
+    href: "#alert-center",
+  },
+  {
+    id: "trace-archives",
+    title: "追溯档案",
+    description: "仅展示允许公开的追溯批次。",
+    href: "#trace-archives",
+  },
+  {
+    id: "ai-assistant",
+    title: "AI 辅助记录",
+    description: "AI 场景、模型和成本记录。",
+    href: "#ai-assistant",
+  },
+] as const
+
+const cropModels = {
+  items: [
+    {
+      id: "crop-model-teaching-tomato",
+      cropName: "番茄",
+      cultivar: "教学示范番茄",
+      activeStage: "苗期",
+      stageCount: 4,
+      cycleId: "cycle-teaching-tomato",
+      siteId: "site-tenglong-smart-farm",
+      status: "active",
+    },
+  ],
+  total: 1,
+  emptyState: "当前项目已有作物模型，后续接入 D1 后展示全部品种。",
+}
+
 export function getConsoleDataWorkbench() {
   const categorySummaries = Object.values(standardDictionaryCategories).map(
     (category) => {
@@ -112,8 +179,73 @@ export function getConsoleDataWorkbench() {
   )
   const compliance = getComplianceChecklist("2026-06-10T08:00:00.000Z")
   const prdCoverage = getPrdCoverageSummary()
+  const coreHandlers = createCoreApiHandlers()
+  const projectAssets = assertCoreResult(
+    coreHandlers.projectDetail(
+      new URLSearchParams({
+        tenantId: defaultCoreTenantId,
+        projectId: defaultCoreProjectId,
+      }),
+      "console_project_assets",
+    ),
+  )
+  const deviceLedger = assertCoreResult(
+    coreHandlers.devices(
+      new URLSearchParams({
+        tenantId: defaultCoreTenantId,
+        siteId: "site-tenglong-smart-farm",
+        limit: "1",
+      }),
+      "console_device_ledger",
+    ),
+  )
+  const alertCenter = assertCoreResult(
+    coreHandlers.alerts(
+      new URLSearchParams({
+        tenantId: defaultCoreTenantId,
+        status: "open",
+      }),
+      "console_alert_center",
+    ),
+  )
+  const agriTasks = assertCoreResult(
+    coreHandlers.agriTasks(
+      new URLSearchParams({
+        tenantId: defaultCoreTenantId,
+        status: "planned",
+      }),
+      "console_agri_tasks",
+    ),
+  )
+  const traceArchives = assertCoreResult(
+    coreHandlers.traceArchives(
+      new URLSearchParams({
+        tenantId: defaultCoreTenantId,
+      }),
+      "console_trace_archives",
+    ),
+  )
+  const aiAssistant = assertCoreResult(
+    coreHandlers.aiInteractions(
+      new URLSearchParams({
+        tenantId: defaultCoreTenantId,
+      }),
+      "console_ai_assistant",
+    ),
+  )
 
   return {
+    businessPages,
+    projectAssets,
+    deviceLedger,
+    cropModels,
+    agriTasks,
+    alertCenter,
+    traceArchives: {
+      ...traceArchives,
+      items: traceArchives.items.filter((archive) => archive.visibility === "public"),
+    },
+    aiAssistant,
     dictionary: {
       version: standardDictionaryVersion,
       totalEntries: baseStandardDictionaryEntries.length,
@@ -157,4 +289,12 @@ export function getConsoleDataWorkbench() {
       migrationCount: heosD1Migrations.length,
     },
   }
+}
+
+function assertCoreResult<T>(result: { ok: true; value: T } | { ok: false }) {
+  if (!result.ok) {
+    throw new Error("Console core query seed must satisfy S3-05 requirements")
+  }
+
+  return result.value
 }

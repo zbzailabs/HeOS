@@ -116,6 +116,21 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     plan: "发布前按模板刷新验证结果。",
   },
   {
+    id: "S3-05",
+    title: "控制台主业务页面",
+    specRef: "PRD 5 与验收 1-5",
+    issue: "#34",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S3-05-console-business-pages.md",
+      "src/domain/console/workbench.ts",
+      "src/routes/console.tsx",
+    ],
+    gap: null,
+    plan: "后续按权限和 URL 结构拆分独立 CRUD 子路由。",
+  },
+  {
     id: "S4-02",
     title: "任务边界与验收命令固化",
     specRef: "Spec 1、Spec 6、Spec 9",

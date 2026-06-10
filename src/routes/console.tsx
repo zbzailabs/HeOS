@@ -4,12 +4,16 @@ import {
   AlertTriangle,
   BarChart3,
   BookOpen,
+  Bot,
   CheckCircle2,
   ChevronRight,
+  ClipboardList,
+  Cpu,
   Database,
   Download,
   FileCheck2,
   History,
+  Leaf,
   LayoutDashboard,
   Lock,
   Map,
@@ -209,6 +213,10 @@ function ConsolePage() {
             <PrdCoveragePanel prdCoverage={dataWorkbench.prdCoverage} />
           </section>
 
+          <section className="pb-5">
+            <BusinessPagesPanel dataWorkbench={dataWorkbench} />
+          </section>
+
           <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5">
               <div className="flex items-start justify-between gap-3">
@@ -270,7 +278,7 @@ function ConsolePage() {
                 />
                 <StatusStep
                   title="业务页面"
-                  text="Renke 同步、HTTP 遥测 API、离线告警和标准稽核已接入首屏；业务 CRUD 页面继续按 PRD 后续任务推进。"
+                  text="项目资产、设备台账、作物模型、农事任务、告警中心、追溯档案和 AI 辅助记录已进入工作台。"
                   done
                 />
               </ol>
@@ -279,6 +287,400 @@ function ConsolePage() {
         </section>
       </div>
     </main>
+  )
+}
+
+function BusinessPagesPanel({
+  dataWorkbench,
+}: {
+  dataWorkbench: ReturnType<typeof getConsoleDataWorkbench>
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-[#2d7359]">
+              <LayoutDashboard size={19} />
+              <h2 className="m-0 text-lg font-extrabold text-[#12383c]">
+                主业务页面
+              </h2>
+            </div>
+            <p className="m-0 mt-2 text-sm leading-6 text-[#5b736d]">
+              入口连接到本页业务区块，数据来自 S2-05 服务端查询结果。
+            </p>
+          </div>
+          <span className="rounded-lg bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]">
+            {dataWorkbench.businessPages.length} pages
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {dataWorkbench.businessPages.map((page) => (
+            <a
+              key={page.id}
+              href={page.href}
+              className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3 text-[#12383c] no-underline transition hover:border-[#9bc8b6] hover:bg-white"
+            >
+              <span className="block text-sm font-extrabold">{page.title}</span>
+              <span className="mt-2 block text-xs font-semibold leading-5 text-[#6c817b]">
+                {page.description}
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <ProjectAssetsPanel projectAssets={dataWorkbench.projectAssets} />
+        <DeviceLedgerPanel deviceLedger={dataWorkbench.deviceLedger} />
+        <CropModelsPanel cropModels={dataWorkbench.cropModels} />
+        <AgriTasksPanel agriTasks={dataWorkbench.agriTasks} />
+        <AlertCenterPanel alertCenter={dataWorkbench.alertCenter} />
+        <TraceArchivesPanel traceArchives={dataWorkbench.traceArchives} />
+      </div>
+
+      <AiAssistantPanel aiAssistant={dataWorkbench.aiAssistant} />
+    </div>
+  )
+}
+
+function ProjectAssetsPanel({
+  projectAssets,
+}: {
+  projectAssets: ReturnType<typeof getConsoleDataWorkbench>['projectAssets']
+}) {
+  return (
+    <BusinessPanel
+      id="project-assets"
+      icon={<Map size={19} />}
+      title="项目资产"
+      badge={`${projectAssets.counts.sites} sites`}
+    >
+      {projectAssets.project ? (
+        <div className="space-y-3">
+          <div className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3">
+            <p className="m-0 text-base font-extrabold text-[#12383c]">
+              {projectAssets.project.name}
+            </p>
+            <p className="m-0 mt-1 break-words text-xs font-semibold leading-5 text-[#6c817b]">
+              {projectAssets.project.code} / {projectAssets.project.status}
+            </p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-4">
+            <MiniStat label="基地" value={String(projectAssets.counts.sites)} />
+            <MiniStat label="地块" value={String(projectAssets.counts.plots)} />
+            <MiniStat
+              label="大棚"
+              value={String(projectAssets.counts.greenhouses)}
+            />
+            <MiniStat label="设备" value={String(projectAssets.counts.devices)} />
+          </div>
+        </div>
+      ) : (
+        <EmptyState text="当前租户没有项目资产。" />
+      )}
+    </BusinessPanel>
+  )
+}
+
+function DeviceLedgerPanel({
+  deviceLedger,
+}: {
+  deviceLedger: ReturnType<typeof getConsoleDataWorkbench>['deviceLedger']
+}) {
+  return (
+    <BusinessPanel
+      id="device-ledger"
+      icon={<Cpu size={19} />}
+      title="设备台账"
+      badge={`${deviceLedger.items.length}/${deviceLedger.total}`}
+    >
+      <FilterRow labels={['site: site-tenglong-smart-farm', 'limit: 1']} />
+      <div className="mt-3 space-y-2">
+        {deviceLedger.items.length > 0 ? (
+          deviceLedger.items.map((device) => (
+            <ListRow
+              key={device.id}
+              title={device.name}
+              meta={`${device.externalDeviceId} / ${device.siteId}`}
+              value={device.onlineStatus}
+            />
+          ))
+        ) : (
+          <EmptyState text="当前筛选条件没有设备。" />
+        )}
+      </div>
+      <PaginationBar total={deviceLedger.total} nextCursor={deviceLedger.nextCursor} />
+    </BusinessPanel>
+  )
+}
+
+function CropModelsPanel({
+  cropModels,
+}: {
+  cropModels: ReturnType<typeof getConsoleDataWorkbench>['cropModels']
+}) {
+  return (
+    <BusinessPanel
+      id="crop-models"
+      icon={<Leaf size={19} />}
+      title="作物模型"
+      badge={`${cropModels.total} models`}
+    >
+      <div className="space-y-2">
+        {cropModels.items.length > 0 ? (
+          cropModels.items.map((model) => (
+            <ListRow
+              key={model.id}
+              title={`${model.cropName} / ${model.cultivar}`}
+              meta={`${model.cycleId} / ${model.stageCount} stages`}
+              value={model.activeStage}
+            />
+          ))
+        ) : (
+          <EmptyState text="当前项目没有作物模型。" />
+        )}
+      </div>
+      <p className="m-0 mt-3 rounded-lg bg-[#f8fcf9] px-3 py-2 text-xs font-semibold leading-5 text-[#6c817b]">
+        {cropModels.emptyState}
+      </p>
+    </BusinessPanel>
+  )
+}
+
+function AgriTasksPanel({
+  agriTasks,
+}: {
+  agriTasks: ReturnType<typeof getConsoleDataWorkbench>['agriTasks']
+}) {
+  return (
+    <BusinessPanel
+      id="agri-tasks"
+      icon={<ClipboardList size={19} />}
+      title="农事任务"
+      badge={`${agriTasks.items.length}/${agriTasks.total}`}
+    >
+      <FilterRow labels={['status: planned']} />
+      <div className="mt-3 space-y-2">
+        {agriTasks.items.length > 0 ? (
+          agriTasks.items.map((task) => (
+            <ListRow
+              key={task.id}
+              title={task.title}
+              meta={`${task.cropCycleId} / ${task.plannedStartAt ?? '未排期'}`}
+              value={task.status}
+            />
+          ))
+        ) : (
+          <EmptyState text="当前筛选条件没有农事任务。" />
+        )}
+      </div>
+      <PaginationBar total={agriTasks.total} nextCursor={agriTasks.nextCursor} />
+    </BusinessPanel>
+  )
+}
+
+function AlertCenterPanel({
+  alertCenter,
+}: {
+  alertCenter: ReturnType<typeof getConsoleDataWorkbench>['alertCenter']
+}) {
+  return (
+    <BusinessPanel
+      id="alert-center"
+      icon={<AlertTriangle size={19} />}
+      title="告警中心"
+      badge={`${alertCenter.items.length}/${alertCenter.total}`}
+    >
+      <FilterRow labels={['status: open']} />
+      <div className="mt-3 space-y-2">
+        {alertCenter.items.length > 0 ? (
+          alertCenter.items.map((alert) => (
+            <ListRow
+              key={alert.id}
+              title={alert.reason}
+              meta={`${alert.type} / ${alert.deviceId ?? 'no-device'}`}
+              value={alert.level}
+            />
+          ))
+        ) : (
+          <EmptyState text="当前筛选条件没有开放告警。" />
+        )}
+      </div>
+      <PaginationBar total={alertCenter.total} nextCursor={alertCenter.nextCursor} />
+    </BusinessPanel>
+  )
+}
+
+function TraceArchivesPanel({
+  traceArchives,
+}: {
+  traceArchives: ReturnType<typeof getConsoleDataWorkbench>['traceArchives']
+}) {
+  return (
+    <BusinessPanel
+      id="trace-archives"
+      icon={<History size={19} />}
+      title="追溯档案"
+      badge={`${traceArchives.items.length}/${traceArchives.total}`}
+    >
+      <FilterRow labels={['visibility: public']} />
+      <div className="mt-3 space-y-2">
+        {traceArchives.items.length > 0 ? (
+          traceArchives.items.map((archive) => (
+            <ListRow
+              key={archive.id}
+              title={archive.publicSlug}
+              meta={`${archive.cropCycleId} / ${archive.createdAt}`}
+              value={archive.visibility}
+            />
+          ))
+        ) : (
+          <EmptyState text="当前没有公开追溯档案。" />
+        )}
+      </div>
+      <PaginationBar
+        total={traceArchives.total}
+        nextCursor={traceArchives.nextCursor}
+      />
+    </BusinessPanel>
+  )
+}
+
+function AiAssistantPanel({
+  aiAssistant,
+}: {
+  aiAssistant: ReturnType<typeof getConsoleDataWorkbench>['aiAssistant']
+}) {
+  return (
+    <BusinessPanel
+      id="ai-assistant"
+      icon={<Bot size={19} />}
+      title="AI 辅助记录"
+      badge={`${aiAssistant.items.length}/${aiAssistant.total}`}
+    >
+      <div className="grid gap-2 md:grid-cols-2">
+        {aiAssistant.items.length > 0 ? (
+          aiAssistant.items.map((interaction) => (
+            <ListRow
+              key={interaction.id}
+              title={interaction.scenario}
+              meta={`${interaction.modelName} / ${interaction.createdAt}`}
+              value={`${interaction.costCents} cents`}
+            />
+          ))
+        ) : (
+          <EmptyState text="当前没有 AI 辅助记录。" />
+        )}
+      </div>
+      <PaginationBar total={aiAssistant.total} nextCursor={aiAssistant.nextCursor} />
+    </BusinessPanel>
+  )
+}
+
+function BusinessPanel({
+  id,
+  icon,
+  title,
+  badge,
+  children,
+}: {
+  id: string
+  icon: React.ReactNode
+  title: string
+  badge: string
+  children: React.ReactNode
+}) {
+  return (
+    <section
+      id={id}
+      className="scroll-mt-6 rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2 text-[#2d7359]">
+          {icon}
+          <h3 className="m-0 text-lg font-extrabold text-[#12383c]">{title}</h3>
+        </div>
+        <span className="rounded-lg bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]">
+          {badge}
+        </span>
+      </div>
+      <div className="mt-4">{children}</div>
+    </section>
+  )
+}
+
+function FilterRow({ labels }: { labels: string[] }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {labels.map((label) => (
+        <span
+          key={label}
+          className="rounded-md bg-[#f0f7f3] px-2.5 py-1.5 text-xs font-extrabold text-[#456b64]"
+        >
+          {label}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function PaginationBar({
+  total,
+  nextCursor,
+}: {
+  total: number
+  nextCursor: string | null
+}) {
+  return (
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#f8fcf9] px-3 py-2 text-xs font-bold text-[#6c817b]">
+      <span>total: {total}</span>
+      <span className="break-all">
+        nextCursor: {nextCursor ?? 'none'}
+      </span>
+    </div>
+  )
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-[#d7e6db] bg-white px-3 py-2">
+      <span className="block text-xs font-bold text-[#6c817b]">{label}</span>
+      <span className="mt-1 block text-base font-extrabold text-[#12383c]">
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function ListRow({
+  title,
+  meta,
+  value,
+}: {
+  title: string
+  meta: string
+  value: string
+}) {
+  return (
+    <div className="grid gap-2 rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3 text-sm sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_auto] sm:items-center">
+      <span className="break-words font-extrabold text-[#12383c]">{title}</span>
+      <span className="break-words text-xs font-semibold leading-5 text-[#6c817b]">
+        {meta}
+      </span>
+      <span className="w-fit rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#2d7359]">
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <div className="rounded-lg border border-dashed border-[#bdd5c8] bg-[#f8fcf9] px-3 py-4 text-sm font-bold text-[#6c817b]">
+      {text}
+    </div>
   )
 }
 
