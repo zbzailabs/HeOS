@@ -53,6 +53,19 @@ describe("console data workbench", () => {
     expect(workbench.d1.databaseName).toBe("heos")
     expect(workbench.d1.migrationsDir).toBe("db/migrations")
     expect(workbench.d1.migrations).toEqual(heosD1Migrations)
-    expect(workbench.d1.migrationCount).toBe(3)
+    expect(workbench.d1.migrationCount).toBe(4)
+  })
+
+  it("summarizes PRD core domain coverage", () => {
+    const workbench = getConsoleDataWorkbench()
+
+    expect(workbench.prdCoverage.tableCount).toBe(19)
+    expect(workbench.prdCoverage.domains).toHaveLength(11)
+    expect(workbench.prdCoverage.domains.map((domain) => domain.title)).toContain(
+      "项目、基地和空间资产",
+    )
+    expect(
+      workbench.prdCoverage.domains.every((domain) => domain.prdRefs.length > 0),
+    ).toBe(true)
   })
 })

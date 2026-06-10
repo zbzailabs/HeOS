@@ -30,6 +30,21 @@ export type ComplianceChecklist = {
 
 export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
   {
+    id: "S1-05",
+    title: "PRD 核心业务域 D1 模型",
+    specRef: "PRD 1-5 与验收 2-8",
+    issue: "#32",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S1-05-prd-core-domain-model.md",
+      "db/migrations/0004_heos_prd_core_domains.sql",
+      "src/domain/core/prd-model.ts",
+    ],
+    gap: null,
+    plan: "继续补齐 CRUD 页面、真实 D1 读写和运行链路。",
+  },
+  {
     id: "S2-01",
     title: "标准化 Renke 同步 API",
     specRef: "Spec 5.2 供应商同步入口",
@@ -154,6 +169,7 @@ export function renderComplianceReport(checklist: ComplianceChecklist) {
     "## 3. 下一迭代目标",
     "",
     "- 将演示数据切换为 D1 查询结果。",
+    "- 基于 S1-05 核心表补齐项目、作物、农事、追溯和 AI 页面。",
     "- 将仁科同步接入 Cron Triggers、Queues 和失败重试。",
     "- 将告警关闭、恢复和审计记录接入真实业务表。",
   )

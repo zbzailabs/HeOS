@@ -4,13 +4,23 @@
 
 ## 1. 汇总
 
-- 检查项：6
-- 已覆盖：6
+- 检查项：7
+- 已覆盖：7
 - 未达标：0
 - 阻断项：0
 - 验收命令：`pnpm test`、`pnpm build`
 
 ## 2. 检查明细
+
+### S1-05 PRD 核心业务域 D1 模型
+
+- Issue：#32
+- Spec：PRD 1-5 与验收 2-8
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S1-05-prd-core-domain-model.md`、`db/migrations/0004_heos_prd_core_domains.sql`、`src/domain/core/prd-model.ts`
+- 未达标原因：无
+- 后续计划：补齐 CRUD 页面、真实 D1 读写和运行链路。
 
 ### S2-01 标准化 Renke 同步 API
 
@@ -74,6 +84,7 @@
 
 ## 3. 下一迭代目标
 
+- 基于 S1-05 核心表补齐项目、作物、农事、追溯和 AI 页面。
 - 将演示数据切换为 D1 查询结果。
 - 将仁科同步接入 Cron Triggers、Queues 和失败重试。
 - 将告警关闭、恢复和审计记录接入真实业务表。

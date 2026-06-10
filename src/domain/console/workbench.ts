@@ -13,6 +13,7 @@ import {
 } from "../telemetry/model"
 import { getDeviceStatusDashboard } from "../alerts/offline"
 import { getComplianceChecklist } from "../compliance/checklist"
+import { getPrdCoverageSummary, prdDomainCoverage } from "../core/prd-model"
 import {
   renkeDeviceAddr,
   renkeProviderId,
@@ -30,6 +31,7 @@ export const heosD1Migrations = [
   "0001_heos_rbac_core.sql",
   "0002_heos_standard_dictionary.sql",
   "0003_heos_telemetry_core.sql",
+  "0004_heos_prd_core_domains.sql",
 ] as const
 
 const categoryLabels = {
@@ -109,6 +111,7 @@ export function getConsoleDataWorkbench() {
     "2026-06-10T08:00:00.000Z",
   )
   const compliance = getComplianceChecklist("2026-06-10T08:00:00.000Z")
+  const prdCoverage = getPrdCoverageSummary()
 
   return {
     dictionary: {
@@ -138,6 +141,16 @@ export function getConsoleDataWorkbench() {
     },
     deviceStatus,
     compliance,
+    prdCoverage: {
+      ...prdCoverage,
+      domains: prdDomainCoverage.map((domain) => ({
+        id: domain.id,
+        title: domain.title,
+        status: domain.firstReleaseStatus,
+        tableCount: domain.tables.length,
+        prdRefs: domain.prdRefs,
+      })),
+    },
     d1: {
       ...heosD1Binding,
       migrations: heosD1Migrations,

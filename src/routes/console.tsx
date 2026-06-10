@@ -154,7 +154,7 @@ function ConsolePage() {
             </div>
           </header>
 
-          <section className="grid gap-3 py-5 sm:grid-cols-2 xl:grid-cols-6">
+          <section className="grid gap-3 py-5 sm:grid-cols-2 xl:grid-cols-7">
             <MetricCard
               label="数据范围"
               value={accessSummary.dataScope ?? 'none'}
@@ -185,6 +185,11 @@ function ConsolePage() {
               value={String(dataWorkbench.telemetry.metricCount)}
               icon={<RadioTower size={18} />}
             />
+            <MetricCard
+              label="PRD 域"
+              value={`${dataWorkbench.prdCoverage.domains.length}/${dataWorkbench.prdCoverage.tableCount}`}
+              icon={<FileCheck2 size={18} />}
+            />
           </section>
 
           <section className="grid gap-4 pb-5 xl:grid-cols-[1fr_1fr]">
@@ -198,6 +203,10 @@ function ConsolePage() {
               deviceStatus={dataWorkbench.deviceStatus}
             />
             <CompliancePanel compliance={dataWorkbench.compliance} />
+          </section>
+
+          <section className="pb-5">
+            <PrdCoveragePanel prdCoverage={dataWorkbench.prdCoverage} />
           </section>
 
           <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -270,6 +279,57 @@ function ConsolePage() {
         </section>
       </div>
     </main>
+  )
+}
+
+function PrdCoveragePanel({
+  prdCoverage,
+}: {
+  prdCoverage: ReturnType<typeof getConsoleDataWorkbench>['prdCoverage']
+}) {
+  return (
+    <div className="rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-[#2d7359]">
+            <FileCheck2 size={19} />
+            <h2 className="m-0 text-lg font-extrabold text-[#12383c]">
+              PRD 核心域覆盖
+            </h2>
+          </div>
+          <p className="m-0 mt-2 text-sm leading-6 text-[#5b736d]">
+            S1-05 已补齐一期主域 D1 数据底座，页面和真实读写继续按域推进。
+          </p>
+        </div>
+        <span className="rounded-lg bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]">
+          {prdCoverage.domains.length} domains / {prdCoverage.tableCount} tables
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {prdCoverage.domains.map((domain) => (
+          <div
+            key={domain.id}
+            className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-sm font-extrabold text-[#12383c]">
+                {domain.title}
+              </span>
+              <span className="rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#2d7359]">
+                {domain.tableCount} tables
+              </span>
+            </div>
+            <p className="m-0 mt-2 text-xs font-semibold leading-5 text-[#6c817b]">
+              {domain.prdRefs.join(' / ')}
+            </p>
+            <span className="mt-3 inline-flex rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#456b64]">
+              {domain.status}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
