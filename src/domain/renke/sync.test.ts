@@ -229,8 +229,16 @@ describe("renke sync normalization", () => {
       syncRunWrites: 1,
     })
     expect(db.tables.heos_devices).toHaveLength(1)
-    expect(db.tables.heos_telemetry_latest).toHaveLength(1)
-    expect(db.tables.heos_telemetry_history).toHaveLength(1)
+    expect(db.tables.heos_telemetry_latest).toContainEqual(
+      expect.objectContaining({
+        device_id: "device-renke-40406816",
+      }),
+    )
+    expect(db.tables.heos_telemetry_history).toContainEqual(
+      expect.objectContaining({
+        device_id: "device-renke-40406816",
+      }),
+    )
     expect(db.tables.heos_sync_runs).toContainEqual(
       expect.objectContaining({
         trace_id: "trace-renke",

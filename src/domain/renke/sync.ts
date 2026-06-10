@@ -490,7 +490,10 @@ export function createRenkeD1SyncRepository(db: RenkeD1Database) {
     },
 
     async writeTelemetrySample(sample: TelemetrySample) {
-      const plan = createTelemetryWritePlan(sample)
+      const plan = createTelemetryWritePlan({
+        ...sample,
+        deviceId: normalizeRenkeDeviceId(sample.deviceId),
+      })
       const latest = plan.latest.record
       const history = plan.history.record
 
@@ -739,7 +742,7 @@ function createRenkeAlertRows(sample: TelemetrySample) {
     createdAt: string
     updatedAt: string
   }[] = []
-  const deviceId = createRenkeDeviceId(sample.deviceId)
+  const deviceId = normalizeRenkeDeviceId(sample.deviceId)
 
   if (sample.quality === telemetryQualities.SUSPECT) {
     alerts.push({
@@ -842,6 +845,12 @@ function shouldSkipRenkePoint(point: RenkeRealtimeDataPoint) {
 
 function createRenkeDeviceId(deviceAddr: string) {
   return `device-renke-${deviceAddr}`
+}
+
+function normalizeRenkeDeviceId(deviceId: string) {
+  return deviceId.startsWith("device-renke-")
+    ? deviceId
+    : createRenkeDeviceId(deviceId)
 }
 
 function createRenkeSyncRunId(traceId: string, startedAt: string) {
