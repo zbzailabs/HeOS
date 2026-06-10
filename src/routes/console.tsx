@@ -3,35 +3,48 @@ import {
   Activity,
   AlertTriangle,
   BarChart3,
+  Bell,
   BookOpen,
   Bot,
   CheckCircle2,
   ChevronRight,
   ClipboardList,
+  CloudCog,
   Cpu,
   Database,
   Download,
   FileCheck2,
+  Gauge,
   History,
   Leaf,
   LayoutDashboard,
+  ListChecks,
+  ListTree,
   Lock,
   Map,
+  MapPinned,
   Menu,
   RadioTower,
+  RefreshCw,
+  ScanEye,
+  ServerCog,
   Settings,
   ShieldCheck,
+  SlidersHorizontal,
   Sprout,
   Table2,
   Users,
+  Warehouse,
   Wifi,
   WifiOff,
 } from 'lucide-react'
 import { getConsoleDataWorkbench } from '../domain/console/workbench'
 import {
+  getConsoleMenuTree,
   getConsoleModuleAccess,
   getConsoleShellMetrics,
   type ConsoleModule,
+  type ConsoleMenuTreeItem,
 } from '../domain/rbac/console-shell'
 import {
   getCurrentAccessContext,
@@ -42,12 +55,28 @@ import { signOut } from '../lib/auth'
 
 const iconMap = {
   activity: Activity,
+  bell: Bell,
+  'book-open': BookOpen,
+  'check-circle-2': CheckCircle2,
+  'cloud-cog': CloudCog,
+  'file-check-2': FileCheck2,
+  gauge: Gauge,
+  history: History,
   'key-round': Lock,
   'layout-dashboard': LayoutDashboard,
+  'list-checks': ListChecks,
+  'list-tree': ListTree,
   map: Map,
+  'map-pinned': MapPinned,
+  'radio-tower': RadioTower,
+  'refresh-cw': RefreshCw,
+  'scan-eye': ScanEye,
+  'server-cog': ServerCog,
   settings: Settings,
   'shield-check': ShieldCheck,
+  'sliders-horizontal': SlidersHorizontal,
   users: Users,
+  warehouse: Warehouse,
 } as const
 
 export const Route = createFileRoute('/console')({
@@ -64,6 +93,7 @@ export const Route = createFileRoute('/console')({
       menuItems,
       moduleAccess: getConsoleModuleAccess(accessContext),
       shellMetrics: getConsoleShellMetrics(accessContext, menuItems),
+      menuTree: getConsoleMenuTree(menuItems),
       dataWorkbench: getConsoleDataWorkbench(),
     }
   },
@@ -75,6 +105,7 @@ function ConsolePage() {
     accessContext,
     accessSummary,
     menuItems,
+    menuTree,
     moduleAccess,
     shellMetrics,
     dataWorkbench,
@@ -114,22 +145,10 @@ function ConsolePage() {
             </button>
           </div>
 
-          <nav className="mt-5 flex max-w-full gap-2 overflow-x-auto pb-1 lg:mt-8 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
-            {menuItems.map((menuItem) => {
-              const Icon =
-                iconMap[menuItem.icon as keyof typeof iconMap] ?? ChevronRight
-              return (
-                <Link
-                  key={menuItem.id}
-                  to="/console"
-                  className="inline-flex min-w-max items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold text-[#dceee7] no-underline transition hover:bg-white/10 hover:text-white lg:flex lg:min-w-0"
-                  activeProps={{ className: 'bg-white/12 text-white' }}
-                >
-                  <Icon size={17} strokeWidth={2.3} />
-                  {menuItem.title}
-                </Link>
-              )
-            })}
+          <nav className="mt-5 grid max-h-[58vh] max-w-full gap-2 overflow-y-auto pr-1 lg:mt-8 lg:max-h-[calc(100vh-8rem)]">
+            {menuTree.map((menuItem) => (
+              <SidebarMenuGroup key={menuItem.id} item={menuItem} />
+            ))}
           </nav>
         </aside>
 
@@ -176,7 +195,7 @@ function ConsolePage() {
             />
             <MetricCard
               label="可见菜单"
-              value={`${shellMetrics.menuCount}/${shellMetrics.configuredMenuCount}`}
+              value={`${shellMetrics.menuCount}+${shellMetrics.childMenuCount}/${shellMetrics.configuredMenuCount}`}
               icon={<LayoutDashboard size={18} />}
             />
             <MetricCard
@@ -607,6 +626,48 @@ function BusinessPanel({
         </span>
       </div>
       <div className="mt-4">{children}</div>
+    </section>
+  )
+}
+
+function SidebarMenuGroup({ item }: { item: ConsoleMenuTreeItem }) {
+  const Icon = iconMap[item.icon as keyof typeof iconMap] ?? ChevronRight
+
+  return (
+    <section className="min-w-0 rounded-lg border border-white/8 bg-white/[0.04] p-1.5">
+      <Link
+        to="/console"
+        className="flex min-w-0 items-center gap-2 rounded-md px-2.5 py-2 text-sm font-extrabold text-white no-underline transition hover:bg-white/10"
+        activeProps={{ className: 'bg-white/12 text-white' }}
+      >
+        <Icon size={17} strokeWidth={2.4} className="shrink-0" />
+        <span className="min-w-0 truncate">{item.title}</span>
+        {item.children.length > 0 ? (
+          <span className="ml-auto rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-extrabold text-[#cde8dc]">
+            {item.children.length}
+          </span>
+        ) : null}
+      </Link>
+
+      {item.children.length > 0 ? (
+        <div className="mt-1 grid gap-0.5 border-l border-white/10 pl-3">
+          {item.children.map((child) => {
+            const ChildIcon =
+              iconMap[child.icon as keyof typeof iconMap] ?? ChevronRight
+
+            return (
+              <Link
+                key={child.id}
+                to="/console"
+                className="flex min-w-0 items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-bold text-[#b7d4c8] no-underline transition hover:bg-white/8 hover:text-white"
+              >
+                <ChildIcon size={14} strokeWidth={2.3} className="shrink-0" />
+                <span className="min-w-0 truncate">{child.title}</span>
+              </Link>
+            )
+          })}
+        </div>
+      ) : null}
     </section>
   )
 }

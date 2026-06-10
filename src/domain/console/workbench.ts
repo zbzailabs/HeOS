@@ -37,6 +37,8 @@ export const heosD1Migrations = [
   "0002_heos_standard_dictionary.sql",
   "0003_heos_telemetry_core.sql",
   "0004_heos_prd_core_domains.sql",
+  "0005_heos_alert_rules.sql",
+  "0006_heos_audit_standard_fields.sql",
 ] as const
 
 const categoryLabels = {

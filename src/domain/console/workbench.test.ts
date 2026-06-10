@@ -53,7 +53,7 @@ describe("console data workbench", () => {
     expect(workbench.d1.databaseName).toBe("heos")
     expect(workbench.d1.migrationsDir).toBe("db/migrations")
     expect(workbench.d1.migrations).toEqual(heosD1Migrations)
-    expect(workbench.d1.migrationCount).toBe(4)
+    expect(workbench.d1.migrationCount).toBe(heosD1Migrations.length)
   })
 
   it("summarizes PRD core domain coverage", () => {
