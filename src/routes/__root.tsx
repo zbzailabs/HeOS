@@ -16,7 +16,7 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
-    const isPublicRoute = location.pathname === '/login' || location.pathname === '/'
+    const isPublicRoute = isPublicPath(location.pathname)
     const user = await getCurrentUser()
 
     if (!user && !isPublicRoute) {
@@ -52,6 +52,14 @@ export const Route = createRootRoute({
   component: RootApp,
   shellComponent: RootDocument,
 })
+
+function isPublicPath(pathname: string) {
+  return (
+    pathname === '/login' ||
+    pathname === '/' ||
+    pathname.startsWith('/trace/')
+  )
+}
 
 function RootApp() {
   const { user } = Route.useRouteContext()

@@ -138,6 +138,7 @@ describe("renke sync normalization", () => {
       deviceWrites: 1,
       latestWrites: 1,
       historyWrites: 1,
+      alertWrites: 0,
       syncRunWrites: 1,
     })
     expect(db.tables.heos_devices).toHaveLength(1)
@@ -151,6 +152,58 @@ describe("renke sync normalization", () => {
         failed_count: 0,
       }),
     )
+  })
+
+  it("generates open alerts when Renke telemetry is suspect or outside production thresholds", async () => {
+    const db = createFakeD1Database()
+    const repository = createRenkeD1SyncRepository(db)
+    const summary = createRenkeSyncSummary({
+      now: "2026-06-10T08:00:00.000Z",
+      devices: [
+        {
+          deviceAddr: "40406816",
+          deviceName: "腾龙小学智慧农场",
+          deviceType: "soil",
+          status: "online",
+          data: [
+            { factorName: "土壤湿度", factorId: 1, value: "18" },
+            { factorName: "PH", factorId: 2, value: 6.8, alarming: 1 },
+          ],
+        },
+      ],
+    })
+
+    await persistRenkeSyncToD1(repository, {
+      traceId: "trace-renke",
+      startedAt: "2026-06-10T07:59:59.000Z",
+      finishedAt: "2026-06-10T08:00:00.000Z",
+      devices: [
+        {
+          deviceAddr: "40406816",
+          deviceName: "腾龙小学智慧农场",
+          deviceType: "soil",
+          status: "online",
+        },
+      ],
+      summary,
+    })
+
+    expect(db.tables.heos_alerts).toEqual([
+      expect.objectContaining({
+        tenant_id: "tenant-tenglong-school",
+        device_id: "device-renke-40406816",
+        alert_type: "threshold",
+        metric_code: metricCodes.SOIL_MOISTURE,
+        status: "open",
+      }),
+      expect.objectContaining({
+        tenant_id: "tenant-tenglong-school",
+        device_id: "device-renke-40406816",
+        alert_type: "data_quality",
+        metric_code: metricCodes.SOIL_PH,
+        status: "open",
+      }),
+    ])
   })
 
   it("records provider failures and creates bounded retry plan", async () => {
@@ -235,6 +288,7 @@ function createFakeD1Database() {
     heos_telemetry_latest: [] as Record<string, unknown>[],
     heos_telemetry_history: [] as Record<string, unknown>[],
     heos_sync_runs: [] as Record<string, unknown>[],
+    heos_alerts: [] as Record<string, unknown>[],
   }
 
   return {
@@ -294,6 +348,23 @@ function createFakeD1Database() {
                   error_code: values[10],
                   error_message: values[11],
                   queue_message_id: values[12],
+                })
+              }
+
+              if (sql.includes("INTO heos_alerts")) {
+                tables.heos_alerts.push({
+                  id: values[0],
+                  tenant_id: values[1],
+                  site_id: values[2],
+                  device_id: values[3],
+                  alert_type: values[4],
+                  level: values[5],
+                  metric_code: values[6],
+                  threshold_json: values[7],
+                  value_observed: values[8],
+                  reason: values[9],
+                  suggested_action: values[10],
+                  status: values[11],
                 })
               }
 

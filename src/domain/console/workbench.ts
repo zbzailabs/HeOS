@@ -307,6 +307,15 @@ export function getConsoleDataWorkbench() {
       historyConflictTarget: sampleWritePlan.history.conflictTarget,
       sampleLatest: sampleWritePlan.latest.record,
       sampleHistoryQuery: sampleHistoryQuery.value,
+      productionLatest: [] as {
+        id: string
+        deviceId: string
+        metricCode: string
+        value: number
+        unit: string
+        quality: string
+        observedAt: string
+      }[],
       emptyState:
         "HTTP 遥测 API 已接入演示数据，生产环境下一步接入 D1 查询。",
     },

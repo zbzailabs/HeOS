@@ -35,89 +35,91 @@ type RenkeSyncSuccessInput = {
 export const Route = createFileRoute("/api/providers/renke/sync")({
   server: {
     handlers: {
-      POST: async () => {
-        const traceId = createTraceId("renke")
-        const startedAt = new Date().toISOString()
-
-        try {
-          const input = await fetchRenkeSyncInput()
-          const finishedAt = new Date().toISOString()
-          const summary = createRenkeSyncSummary({
-            devices: input.realtimeDevices,
-            now: finishedAt,
-          })
-          const persistence = await persistIfD1Available({
-            traceId,
-            startedAt,
-            finishedAt,
-            devices: [input.targetDevice],
-            summary,
-          })
-          const historyEndpoint = resolveRenkeHistoryEndpoint(
-            input.targetDevice.deviceType,
-          )
-
-          return json(
-            {
-              traceId,
-              data: {
-                ...summary,
-                provider: renkeProviderId,
-                targetDevice: {
-                  deviceAddr: input.targetDevice.deviceAddr,
-                  deviceName: input.targetDevice.deviceName,
-                  deviceType: input.targetDevice.deviceType,
-                  historyEndpoint,
-                },
-                persistence,
-              },
-            },
-            { status: 200 },
-          )
-        } catch (error) {
-          const failure = classifyRenkeClientError(error)
-          const finishedAt = new Date().toISOString()
-          const retry = createRenkeRetryPlan(failure, 1)
-          const queueMessage = createRenkeSyncQueueMessage({
-            traceId,
-            attempt: retry.nextAttempt,
-          })
-          const queueResult = retry.shouldRetry
-            ? await sendRetryMessageIfAvailable(queueMessage, retry.delaySeconds)
-            : { status: "skipped" as const }
-          const persistence = await recordFailureIfD1Available({
-            traceId,
-            startedAt,
-            finishedAt,
-            failure,
-            queueMessageId:
-              queueResult.status === "sent" ? queueMessage.traceId : null,
-          })
-
-          return json(
-            {
-              traceId,
-              data: {
-                total: 1,
-                updated: 0,
-                failed: 1,
-                ts: new Date().toISOString(),
-                status: failure.code,
-                samples: [],
-                failures: [failure],
-                retry,
-                queueMessage,
-                queueResult,
-                persistence,
-              },
-            },
-            { status: failure.code === "auth_timeout" ? 401 : 502 },
-          )
-        }
-      },
+      POST: handleRenkeSyncPost,
     },
   },
 })
+
+export async function handleRenkeSyncPost() {
+  const traceId = createTraceId("renke")
+  const startedAt = new Date().toISOString()
+
+  try {
+    const input = await fetchRenkeSyncInput()
+    const finishedAt = new Date().toISOString()
+    const summary = createRenkeSyncSummary({
+      devices: input.realtimeDevices,
+      now: finishedAt,
+    })
+    const persistence = await persistIfD1Available({
+      traceId,
+      startedAt,
+      finishedAt,
+      devices: [input.targetDevice],
+      summary,
+    })
+    const historyEndpoint = resolveRenkeHistoryEndpoint(
+      input.targetDevice.deviceType,
+    )
+
+    return json(
+      {
+        traceId,
+        data: {
+          ...summary,
+          provider: renkeProviderId,
+          targetDevice: {
+            deviceAddr: input.targetDevice.deviceAddr,
+            deviceName: input.targetDevice.deviceName,
+            deviceType: input.targetDevice.deviceType,
+            historyEndpoint,
+          },
+          persistence,
+        },
+      },
+      { status: 200 },
+    )
+  } catch (error) {
+    const failure = classifyRenkeClientError(error)
+    const finishedAt = new Date().toISOString()
+    const retry = createRenkeRetryPlan(failure, 1)
+    const queueMessage = createRenkeSyncQueueMessage({
+      traceId,
+      attempt: retry.nextAttempt,
+    })
+    const queueResult = retry.shouldRetry
+      ? await sendRetryMessageIfAvailable(queueMessage, retry.delaySeconds)
+      : { status: "skipped" as const }
+    const persistence = await recordFailureIfD1Available({
+      traceId,
+      startedAt,
+      finishedAt,
+      failure,
+      queueMessageId:
+        queueResult.status === "sent" ? queueMessage.traceId : null,
+    })
+
+    return json(
+      {
+        traceId,
+        data: {
+          total: 1,
+          updated: 0,
+          failed: 1,
+          ts: new Date().toISOString(),
+          status: failure.code,
+          samples: [],
+          failures: [failure],
+          retry,
+          queueMessage,
+          queueResult,
+          persistence,
+        },
+      },
+      { status: failure.code === "auth_timeout" ? 401 : 502 },
+    )
+  }
+}
 
 async function fetchRenkeSyncInput(): Promise<RenkeSyncSuccessInput> {
   const renkeEnv = env as {

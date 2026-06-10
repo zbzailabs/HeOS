@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TraceSlugRouteImport } from './routes/trace/$slug'
 import { Route as DemoPrismaRouteImport } from './routes/demo/prisma'
 import { Route as DemoNeonRouteImport } from './routes/demo/neon'
 import { Route as ApiTelemetryLatestRouteImport } from './routes/api/telemetry/latest'
@@ -46,6 +47,11 @@ const AboutRoute = AboutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TraceSlugRoute = TraceSlugRouteImport.update({
+  id: '/trace/$slug',
+  path: '/trace/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoPrismaRoute = DemoPrismaRouteImport.update({
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
+  '/trace/$slug': typeof TraceSlugRoute
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
+  '/trace/$slug': typeof TraceSlugRoute
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
+  '/trace/$slug': typeof TraceSlugRoute
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/demo/neon'
     | '/demo/prisma'
+    | '/trace/$slug'
     | '/api/compliance/checklist'
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/demo/neon'
     | '/demo/prisma'
+    | '/trace/$slug'
     | '/api/compliance/checklist'
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/demo/neon'
     | '/demo/prisma'
+    | '/trace/$slug'
     | '/api/compliance/checklist'
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
@@ -250,6 +262,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   DemoNeonRoute: typeof DemoNeonRoute
   DemoPrismaRoute: typeof DemoPrismaRoute
+  TraceSlugRoute: typeof TraceSlugRoute
   ApiComplianceChecklistRoute: typeof ApiComplianceChecklistRoute
   ApiCoreAgriTasksRoute: typeof ApiCoreAgriTasksRoute
   ApiCoreAiInteractionsRoute: typeof ApiCoreAiInteractionsRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trace/$slug': {
+      id: '/trace/$slug'
+      path: '/trace/$slug'
+      fullPath: '/trace/$slug'
+      preLoaderRoute: typeof TraceSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/prisma': {
@@ -402,6 +422,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   DemoNeonRoute: DemoNeonRoute,
   DemoPrismaRoute: DemoPrismaRoute,
+  TraceSlugRoute: TraceSlugRoute,
   ApiComplianceChecklistRoute: ApiComplianceChecklistRoute,
   ApiCoreAgriTasksRoute: ApiCoreAgriTasksRoute,
   ApiCoreAiInteractionsRoute: ApiCoreAiInteractionsRoute,

@@ -190,6 +190,33 @@ const renkeMetricMappings: readonly {
   },
 ]
 
+const renkeProductionThresholds: Partial<
+  Record<
+    MetricCode,
+    {
+      lower?: number
+      upper?: number
+      action: string
+    }
+  >
+> = {
+  [metricCodes.AIR_TEMPERATURE]: {
+    lower: 10,
+    upper: 35,
+    action: "复核大棚通风、遮阳和保温状态。",
+  },
+  [metricCodes.SOIL_MOISTURE]: {
+    lower: 35,
+    upper: 85,
+    action: "安排现场复核墒情并调整灌溉计划。",
+  },
+  [metricCodes.SOIL_PH]: {
+    lower: 5.5,
+    upper: 7.5,
+    action: "安排农艺人员复核酸碱度并调整水肥方案。",
+  },
+}
+
 export function createRenkeSyncSummary(input: {
   devices: readonly RenkeRealtimeDevice[]
   tenantId?: string
@@ -541,6 +568,59 @@ export function createRenkeD1SyncRepository(db: RenkeD1Database) {
         .run()
     },
 
+    async writeAlertsForSample(sample: TelemetrySample) {
+      const alerts = createRenkeAlertRows(sample)
+
+      for (const alert of alerts) {
+        await db
+          .prepare(
+            `INSERT INTO heos_alerts (
+              id,
+              tenant_id,
+              site_id,
+              device_id,
+              alert_type,
+              level,
+              metric_code,
+              threshold_json,
+              value_observed,
+              reason,
+              suggested_action,
+              status,
+              created_at,
+              updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+              level = excluded.level,
+              threshold_json = excluded.threshold_json,
+              value_observed = excluded.value_observed,
+              reason = excluded.reason,
+              suggested_action = excluded.suggested_action,
+              status = excluded.status,
+              updated_at = excluded.updated_at`,
+          )
+          .bind(
+            alert.id,
+            alert.tenantId,
+            alert.siteId,
+            alert.deviceId,
+            alert.alertType,
+            alert.level,
+            alert.metricCode,
+            alert.thresholdJson,
+            alert.valueObserved,
+            alert.reason,
+            alert.suggestedAction,
+            alert.status,
+            alert.createdAt,
+            alert.updatedAt,
+          )
+          .run()
+      }
+
+      return alerts.length
+    },
+
     async recordSyncRun(input: RenkeSyncRunInput) {
       await db
         .prepare(
@@ -593,6 +673,7 @@ export async function persistRenkeSyncToD1(
   let deviceWrites = 0
   let latestWrites = 0
   let historyWrites = 0
+  let alertWrites = 0
 
   for (const device of input.devices) {
     if (await repository.upsertDevice(device, input.summary.ts)) {
@@ -602,6 +683,7 @@ export async function persistRenkeSyncToD1(
 
   for (const sample of input.summary.samples) {
     await repository.writeTelemetrySample(sample)
+    alertWrites += await repository.writeAlertsForSample(sample)
     latestWrites += 1
     historyWrites += 1
   }
@@ -622,8 +704,76 @@ export async function persistRenkeSyncToD1(
     deviceWrites,
     latestWrites,
     historyWrites,
+    alertWrites,
     syncRunWrites: 1,
   }
+}
+
+function createRenkeAlertRows(sample: TelemetrySample) {
+  const alerts: {
+    id: string
+    tenantId: string
+    siteId: string
+    deviceId: string
+    alertType: "threshold" | "data_quality"
+    level: "warning" | "critical"
+    metricCode: MetricCode
+    thresholdJson: string
+    valueObserved: number
+    reason: string
+    suggestedAction: string
+    status: "open"
+    createdAt: string
+    updatedAt: string
+  }[] = []
+  const deviceId = createRenkeDeviceId(sample.deviceId)
+
+  if (sample.quality === telemetryQualities.SUSPECT) {
+    alerts.push({
+      id: createStableAlertId(sample, "data_quality"),
+      tenantId: sample.tenantId,
+      siteId: sample.siteId,
+      deviceId,
+      alertType: "data_quality",
+      level: "warning",
+      metricCode: sample.metricCode,
+      thresholdJson: "{}",
+      valueObserved: sample.value,
+      reason: `${sample.metricCode} 数据质量被供应商标记为异常。`,
+      suggestedAction: "复核供应商告警状态和现场传感器读数。",
+      status: "open",
+      createdAt: sample.observedAt,
+      updatedAt: sample.ingestedAt,
+    })
+  }
+
+  const threshold = renkeProductionThresholds[sample.metricCode]
+  const below = threshold?.lower !== undefined && sample.value < threshold.lower
+  const above = threshold?.upper !== undefined && sample.value > threshold.upper
+
+  if (threshold && (below || above)) {
+    alerts.push({
+      id: createStableAlertId(sample, "threshold"),
+      tenantId: sample.tenantId,
+      siteId: sample.siteId,
+      deviceId,
+      alertType: "threshold",
+      level: above ? "critical" : "warning",
+      metricCode: sample.metricCode,
+      thresholdJson: JSON.stringify({
+        lower: threshold.lower ?? null,
+        upper: threshold.upper ?? null,
+      }),
+      valueObserved: sample.value,
+      reason: `${sample.metricCode} 当前值 ${sample.value} 超出生产阈值。`,
+      suggestedAction: threshold.action,
+      status: "open",
+      createdAt: sample.observedAt,
+      updatedAt: sample.ingestedAt,
+    })
+  }
+
+  return alerts
 }
 
 export function resolveRenkeMetric(point: RenkeRealtimeDataPoint) {
@@ -642,6 +792,15 @@ function createRenkeDeviceId(deviceAddr: string) {
 
 function createRenkeSyncRunId(traceId: string, startedAt: string) {
   return `sync-renke-${createStableHash(`${traceId}:${startedAt}`)}`
+}
+
+function createStableAlertId(
+  sample: TelemetrySample,
+  alertType: "threshold" | "data_quality",
+) {
+  return `alert-renke-${createStableHash(
+    `${sample.tenantId}:${sample.siteId}:${sample.deviceId}:${sample.metricCode}:${alertType}`,
+  )}`
 }
 
 function normalizeRenkeOnlineStatus(status: string | undefined) {

@@ -52,6 +52,7 @@ import {
   getCurrentConsoleMenu,
 } from '../lib/access'
 import { signOut } from '../lib/auth'
+import { getCurrentConsoleDataWorkbench } from '../lib/console-data'
 
 const iconMap = {
   activity: Activity,
@@ -94,7 +95,7 @@ export const Route = createFileRoute('/console')({
       moduleAccess: getConsoleModuleAccess(accessContext),
       shellMetrics: getConsoleShellMetrics(accessContext, menuItems),
       menuTree: getConsoleMenuTree(menuItems),
-      dataWorkbench: getConsoleDataWorkbench(),
+      dataWorkbench: await getCurrentConsoleDataWorkbench(),
     }
   },
   component: ConsolePage,
@@ -1072,7 +1073,7 @@ function TelemetryModelPanel({
             </h2>
           </div>
           <p className="m-0 mt-2 text-sm leading-6 text-[#5b736d]">
-            S1-01 已接入后台首屏，当前展示模型状态和示例数据。
+            S1-01 已接入后台首屏，生产环境优先展示 D1 最近遥测数据。
           </p>
         </div>
         <span className="rounded-lg bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]">
@@ -1098,19 +1099,38 @@ function TelemetryModelPanel({
       <div className="mt-4 rounded-lg border border-[#d7e6db] bg-[#f8fcf9] p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-sm font-extrabold text-[#12383c]">
-            示例最近值
+            {telemetry.productionLatest.length > 0 ? '生产最近值' : '示例最近值'}
           </span>
           <span className="rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#2d7359]">
-            {telemetry.sampleLatest.metricCode}
+            {telemetry.productionLatest.length > 0
+              ? `${telemetry.productionLatest.length} rows`
+              : telemetry.sampleLatest.metricCode}
           </span>
         </div>
-        <div className="mt-3 grid gap-2 text-sm font-semibold text-[#5b736d] sm:grid-cols-3">
-          <span>{telemetry.sampleLatest.deviceId}</span>
-          <span>
-            {telemetry.sampleLatest.value} {telemetry.sampleLatest.unit}
-          </span>
-          <span>{telemetry.sampleLatest.observedAt}</span>
-        </div>
+        {telemetry.productionLatest.length > 0 ? (
+          <div className="mt-3 grid gap-2">
+            {telemetry.productionLatest.map((record) => (
+              <div
+                key={record.id}
+                className="grid gap-2 rounded-lg border border-[#d7e6db] bg-white px-3 py-2 text-sm font-semibold text-[#5b736d] sm:grid-cols-[1fr_1fr_auto]"
+              >
+                <span className="break-words">{record.deviceId}</span>
+                <span className="break-words">
+                  {record.metricCode}: {record.value} {record.unit}
+                </span>
+                <span className="break-words">{record.observedAt}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-3 grid gap-2 text-sm font-semibold text-[#5b736d] sm:grid-cols-3">
+            <span>{telemetry.sampleLatest.deviceId}</span>
+            <span>
+              {telemetry.sampleLatest.value} {telemetry.sampleLatest.unit}
+            </span>
+            <span>{telemetry.sampleLatest.observedAt}</span>
+          </div>
+        )}
       </div>
 
       <p className="m-0 mt-4 rounded-lg bg-[#fff8e8] px-3 py-2 text-sm font-bold leading-6 text-[#7a5a19]">
