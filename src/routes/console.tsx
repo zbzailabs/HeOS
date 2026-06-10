@@ -2,18 +2,23 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import {
   Activity,
   BarChart3,
+  BookOpen,
   CheckCircle2,
   ChevronRight,
   Database,
+  History,
   LayoutDashboard,
   Lock,
   Map,
   Menu,
+  RadioTower,
   Settings,
   ShieldCheck,
   Sprout,
+  Table2,
   Users,
 } from 'lucide-react'
+import { getConsoleDataWorkbench } from '../domain/console/workbench'
 import {
   getConsoleModuleAccess,
   getConsoleShellMetrics,
@@ -50,6 +55,7 @@ export const Route = createFileRoute('/console')({
       menuItems,
       moduleAccess: getConsoleModuleAccess(accessContext),
       shellMetrics: getConsoleShellMetrics(accessContext, menuItems),
+      dataWorkbench: getConsoleDataWorkbench(),
     }
   },
   component: ConsolePage,
@@ -62,6 +68,7 @@ function ConsolePage() {
     menuItems,
     moduleAccess,
     shellMetrics,
+    dataWorkbench,
   } = Route.useLoaderData()
   const currentUser = accessContext?.user
 
@@ -142,7 +149,7 @@ function ConsolePage() {
             </div>
           </header>
 
-          <section className="grid gap-3 py-5 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-3 py-5 sm:grid-cols-2 xl:grid-cols-6">
             <MetricCard
               label="数据范围"
               value={accessSummary.dataScope ?? 'none'}
@@ -163,6 +170,21 @@ function ConsolePage() {
               value={`${shellMetrics.menuCount}/${shellMetrics.configuredMenuCount}`}
               icon={<LayoutDashboard size={18} />}
             />
+            <MetricCard
+              label="字典条目"
+              value={String(dataWorkbench.dictionary.totalEntries)}
+              icon={<BookOpen size={18} />}
+            />
+            <MetricCard
+              label="遥测指标"
+              value={String(dataWorkbench.telemetry.metricCount)}
+              icon={<RadioTower size={18} />}
+            />
+          </section>
+
+          <section className="grid gap-4 pb-5 xl:grid-cols-[1fr_1fr]">
+            <DictionaryCoveragePanel dictionary={dataWorkbench.dictionary} />
+            <TelemetryModelPanel telemetry={dataWorkbench.telemetry} />
           </section>
 
           <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -195,6 +217,21 @@ function ConsolePage() {
               </div>
               <ol className="mt-5 space-y-4 pl-0">
                 <StatusStep
+                  title="标准字典"
+                  text={`${dataWorkbench.dictionary.categoryCount} 类 ${dataWorkbench.dictionary.totalEntries} 条码表已进入工作台首屏。`}
+                  done
+                />
+                <StatusStep
+                  title="遥测底座"
+                  text={`${dataWorkbench.telemetry.latestTable} 与 ${dataWorkbench.telemetry.historyTable} 已完成模型展示。`}
+                  done
+                />
+                <StatusStep
+                  title="D1 数据库"
+                  text={`${dataWorkbench.d1.binding} 绑定 ${dataWorkbench.d1.databaseName}，迁移目录 ${dataWorkbench.d1.migrationsDir}。`}
+                  done
+                />
+                <StatusStep
                   title="权限模型"
                   text="S1-04 已完成 D1 表结构、权限码、数据范围和菜单定义。"
                   done
@@ -211,7 +248,7 @@ function ConsolePage() {
                 />
                 <StatusStep
                   title="业务页面"
-                  text="租户权限、资产、监测告警和系统管理页面继续按 Issue 推进。"
+                  text="Renke 同步、HTTP 遥测 API、告警生成和业务 CRUD 页面继续按 Issue 推进。"
                 />
               </ol>
             </div>
@@ -219,6 +256,147 @@ function ConsolePage() {
         </section>
       </div>
     </main>
+  )
+}
+
+function DictionaryCoveragePanel({
+  dictionary,
+}: {
+  dictionary: ReturnType<typeof getConsoleDataWorkbench>['dictionary']
+}) {
+  return (
+    <div className="rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-[#2d7359]">
+            <BookOpen size={19} />
+            <h2 className="m-0 text-lg font-extrabold text-[#12383c]">
+              标准字典覆盖
+            </h2>
+          </div>
+          <p className="m-0 mt-2 text-sm leading-6 text-[#5b736d]">
+            S0-01 已接入后台首屏，分类和条目来自标准字典单源定义。
+          </p>
+        </div>
+        <span className="rounded-lg bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]">
+          {dictionary.version}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {dictionary.categories.map((category) => (
+          <div
+            key={category.category}
+            className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-extrabold text-[#12383c]">
+                {category.label}
+              </span>
+              <span className="rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#2d7359]">
+                {category.activeCount}/{category.count}
+              </span>
+            </div>
+            <p className="m-0 mt-2 text-xs font-semibold text-[#6c817b]">
+              active / total
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TelemetryModelPanel({
+  telemetry,
+}: {
+  telemetry: ReturnType<typeof getConsoleDataWorkbench>['telemetry']
+}) {
+  return (
+    <div className="rounded-lg border border-[#d7e6db] bg-white p-4 shadow-[0_18px_44px_rgba(18,56,60,0.08)] sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-[#2d7359]">
+            <RadioTower size={19} />
+            <h2 className="m-0 text-lg font-extrabold text-[#12383c]">
+              遥测数据底座
+            </h2>
+          </div>
+          <p className="m-0 mt-2 text-sm leading-6 text-[#5b736d]">
+            S1-01 已接入后台首屏，当前展示模型状态和示例数据。
+          </p>
+        </div>
+        <span className="rounded-lg bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]">
+          {telemetry.metricCount} metrics
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <TelemetryFact
+          icon={<Table2 size={17} />}
+          label="最近值表"
+          value={telemetry.latestTable}
+          detail={telemetry.latestConflictTarget}
+        />
+        <TelemetryFact
+          icon={<History size={17} />}
+          label="历史表"
+          value={telemetry.historyTable}
+          detail={`cursor: ${telemetry.sampleHistoryQuery.orderBy.join(' / ')}`}
+        />
+      </div>
+
+      <div className="mt-4 rounded-lg border border-[#d7e6db] bg-[#f8fcf9] p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-sm font-extrabold text-[#12383c]">
+            示例最近值
+          </span>
+          <span className="rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#2d7359]">
+            {telemetry.sampleLatest.metricCode}
+          </span>
+        </div>
+        <div className="mt-3 grid gap-2 text-sm font-semibold text-[#5b736d] sm:grid-cols-3">
+          <span>{telemetry.sampleLatest.deviceId}</span>
+          <span>
+            {telemetry.sampleLatest.value} {telemetry.sampleLatest.unit}
+          </span>
+          <span>{telemetry.sampleLatest.observedAt}</span>
+        </div>
+      </div>
+
+      <p className="m-0 mt-4 rounded-lg bg-[#fff8e8] px-3 py-2 text-sm font-bold leading-6 text-[#7a5a19]">
+        {telemetry.emptyState}
+      </p>
+    </div>
+  )
+}
+
+function TelemetryFact({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string
+  detail: string
+}) {
+  return (
+    <div className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3">
+      <div className="flex items-center gap-2 text-[#2d7359]">
+        {icon}
+        <span className="text-xs font-extrabold uppercase tracking-[0.08em]">
+          {label}
+        </span>
+      </div>
+      <p className="m-0 mt-2 break-words text-sm font-extrabold text-[#12383c]">
+        {value}
+      </p>
+      <p className="m-0 mt-1 break-words text-xs font-semibold leading-5 text-[#6c817b]">
+        {detail}
+      </p>
+    </div>
   )
 }
 
