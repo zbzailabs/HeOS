@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoPrismaRouteImport } from './routes/demo/prisma'
@@ -18,6 +19,11 @@ import { Route as DemoNeonRouteImport } from './routes/demo/neon'
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -44,6 +50,7 @@ const DemoNeonRoute = DemoNeonRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/console': typeof ConsoleRoute
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/console': typeof ConsoleRoute
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
@@ -59,21 +67,36 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/console': typeof ConsoleRoute
   '/login': typeof LoginRoute
   '/demo/neon': typeof DemoNeonRoute
   '/demo/prisma': typeof DemoPrismaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/login' | '/demo/neon' | '/demo/prisma'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/console'
+    | '/login'
+    | '/demo/neon'
+    | '/demo/prisma'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/login' | '/demo/neon' | '/demo/prisma'
-  id: '__root__' | '/' | '/about' | '/login' | '/demo/neon' | '/demo/prisma'
+  to: '/' | '/about' | '/console' | '/login' | '/demo/neon' | '/demo/prisma'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/console'
+    | '/login'
+    | '/demo/neon'
+    | '/demo/prisma'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ConsoleRoute: typeof ConsoleRoute
   LoginRoute: typeof LoginRoute
   DemoNeonRoute: typeof DemoNeonRoute
   DemoPrismaRoute: typeof DemoPrismaRoute
@@ -86,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/console': {
+      id: '/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof ConsoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -122,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ConsoleRoute: ConsoleRoute,
   LoginRoute: LoginRoute,
   DemoNeonRoute: DemoNeonRoute,
   DemoPrismaRoute: DemoPrismaRoute,

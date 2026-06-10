@@ -57,8 +57,9 @@ function RootApp() {
   const { user } = Route.useRouteContext()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const isDemoHome = pathname === '/'
+  const isConsole = pathname.startsWith('/console')
 
-  if (isDemoHome) {
+  if (isDemoHome || isConsole) {
     return <Outlet />
   }
 

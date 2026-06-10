@@ -160,6 +160,22 @@ Create `src/lib/access.ts` with `getCurrentAccessContext`, `getCurrentAccessSumm
 
 Create `src/domain/rbac/access-policy.test.ts` covering anonymous access, bootstrap administrator access, readonly access, menu filtering, and high-risk permission rejection.
 
+- [ ] **Task S3-03 Step 1: Write console shell spec**
+
+Create `docs/specs/S3-03-console-shell.md` to define the `/console` shell, service-side menu source, current permission summary, responsive constraints, and non-goals.
+
+- [ ] **Task S3-03 Step 2: Add console shell helpers**
+
+Create `src/domain/rbac/console-shell.ts` and tests for module access, visible menu routes, and console summary metrics.
+
+- [ ] **Task S3-03 Step 3: Add `/console` route**
+
+Create `src/routes/console.tsx`. Load `getCurrentAccessContext`, `getCurrentAccessSummary`, and `getCurrentConsoleMenu` from server functions. Render a work-focused admin shell with side navigation, access summary, module cards, and implementation status.
+
+- [ ] **Task S3-03 Step 4: Update auth entry points**
+
+Keep `/` public, keep `/console` protected by the root route, route successful login to `/console`, and add a signed-in console link to the existing header.
+
 ### M2: Alerting and Rules
 
 **Issues:** #7, #11

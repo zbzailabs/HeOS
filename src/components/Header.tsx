@@ -37,6 +37,15 @@ export default function Header({ user }: HeaderProps) {
           >
             工作台
           </Link>
+          {user ? (
+            <Link
+              to="/console"
+              className="nav-link"
+              activeProps={{ className: 'nav-link is-active' }}
+            >
+              控制台
+            </Link>
+          ) : null}
           <Link
             to="/about"
             className="nav-link"

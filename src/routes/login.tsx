@@ -32,7 +32,7 @@ function LoginPage() {
         setError(result.message)
         return
       }
-      await router.navigate({ to: '/' })
+      await router.navigate({ to: '/console' })
       await router.invalidate()
     } catch (err) {
       setError(err instanceof Error ? err.message : '登录服务暂不可用')
