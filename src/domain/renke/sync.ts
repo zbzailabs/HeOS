@@ -36,9 +36,18 @@ export type RenkeRealtimeDataPoint = {
   nodeId?: string | number
   value?: string | number
   valueText?: string | number
+  temValue?: string | number
+  temValueStr?: string | number
   unit?: string
+  temUnit?: string
   alarmStatus?: string | number | boolean
   alarming?: string | number | boolean
+  temAlarmStatus?: string | number | boolean
+  humAlarmStatus?: string | number | boolean
+  electricQuantityAlarmStatus?: string | number | boolean
+  nodeType?: string | number
+  factorType?: string | number
+  valveStatus?: string | number | boolean
 }
 
 export type RenkeRealtimeDevice = {
@@ -139,7 +148,7 @@ const renkeMetricMappings: readonly {
   unit: string
 }[] = [
   {
-    patterns: ["空气温度", "气温", "air_temperature", "temperature"],
+    patterns: ["空气温度", "气温", "温度", "air_temperature", "temperature"],
     metricCode: metricCodes.AIR_TEMPERATURE,
     unit: "celsius",
   },
@@ -242,8 +251,12 @@ export function createRenkeSyncSummary(input: {
     }
 
     for (const point of device.data) {
+      if (shouldSkipRenkePoint(point)) {
+        continue
+      }
+
       const metric = resolveRenkeMetric(point)
-      const value = Number(point.value ?? point.valueText)
+      const value = getRenkePointValue(point)
 
       if (!metric || !Number.isFinite(value)) {
         failures.push({
@@ -777,12 +790,53 @@ function createRenkeAlertRows(sample: TelemetrySample) {
 }
 
 export function resolveRenkeMetric(point: RenkeRealtimeDataPoint) {
-  const label = String(
-    point.name ?? point.factorName ?? point.nodeName ?? point.key ?? "",
-  ).toLowerCase()
+  const label = getRenkePointLabel(point).toLowerCase()
+  let bestMatch:
+    | {
+        mapping: (typeof renkeMetricMappings)[number]
+        patternLength: number
+      }
+    | undefined
 
-  return renkeMetricMappings.find((mapping) =>
-    mapping.patterns.some((pattern) => label.includes(pattern.toLowerCase())),
+  for (const mapping of renkeMetricMappings) {
+    for (const pattern of mapping.patterns) {
+      const normalizedPattern = pattern.toLowerCase()
+
+      if (
+        label.includes(normalizedPattern) &&
+        normalizedPattern.length > (bestMatch?.patternLength ?? 0)
+      ) {
+        bestMatch = {
+          mapping,
+          patternLength: normalizedPattern.length,
+        }
+      }
+    }
+  }
+
+  return bestMatch?.mapping
+}
+
+function getRenkePointLabel(point: RenkeRealtimeDataPoint) {
+  return String(point.name ?? point.factorName ?? point.nodeName ?? point.key ?? "")
+}
+
+function getRenkePointValue(point: RenkeRealtimeDataPoint) {
+  return Number(point.value ?? point.valueText ?? point.temValue ?? point.temValueStr)
+}
+
+function shouldSkipRenkePoint(point: RenkeRealtimeDataPoint) {
+  const label = getRenkePointLabel(point).toLowerCase()
+
+  return (
+    point.nodeType === 5 ||
+    point.nodeType === "5" ||
+    point.factorType === 2 ||
+    point.factorType === "2" ||
+    point.valveStatus !== undefined ||
+    label.includes("雨量") ||
+    label.includes("rainfall") ||
+    label.includes("precipitation")
   )
 }
 
@@ -825,7 +879,13 @@ function normalizeCoordinate(value: string | number | undefined) {
 }
 
 function isRenkePointAlarming(point: RenkeRealtimeDataPoint) {
-  return [point.alarmStatus, point.alarming].some((value) => {
+  return [
+    point.alarmStatus,
+    point.alarming,
+    point.temAlarmStatus,
+    point.humAlarmStatus,
+    point.electricQuantityAlarmStatus,
+  ].some((value) => {
     if (typeof value === "boolean") {
       return value
     }

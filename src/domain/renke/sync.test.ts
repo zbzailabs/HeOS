@@ -55,6 +55,93 @@ describe("renke sync normalization", () => {
     expect(summary.samples[1]?.quality).toBe(telemetryQualities.SUSPECT)
   })
 
+  it("maps current Renke irrigation payload fields and skips non-telemetry nodes", () => {
+    const summary = createRenkeSyncSummary({
+      now: "2026-06-10T22:42:39.045Z",
+      devices: [
+        {
+          deviceAddr: "40406816",
+          deviceName: "40406816",
+          deviceType: "irrigation3.3",
+          status: "online",
+          data: [
+            {
+              nodeName: "湿度",
+              nodeType: 4,
+              factorType: 1,
+              factorId: "40406816_0",
+              temValue: 46.099998474121094,
+              temUnit: "%RH",
+              temAlarmStatus: 0,
+            },
+            {
+              nodeName: "温度",
+              nodeType: 4,
+              factorType: 1,
+              factorId: "40406816_1",
+              temValue: 26.399999618530273,
+              temUnit: "℃",
+              temAlarmStatus: 0,
+            },
+            {
+              nodeName: "土壤水分",
+              nodeType: 4,
+              factorType: 1,
+              factorId: "40406816_3",
+              temValue: 0,
+              temUnit: "%",
+              temAlarmStatus: 0,
+            },
+            {
+              nodeName: "土壤PH",
+              nodeType: 4,
+              factorType: 1,
+              factorId: "40406816_5",
+              temValue: 9,
+              temUnit: "",
+              temAlarmStatus: 0,
+            },
+            {
+              nodeName: "雨量",
+              nodeType: 4,
+              factorType: 1,
+              factorId: "40406816_6",
+              temValue: 0,
+              temUnit: "mm",
+              temAlarmStatus: 0,
+            },
+            {
+              nodeName: "继电器1",
+              nodeType: 5,
+              factorType: 2,
+              factorId: "40406816_15000",
+              valveStatus: "0",
+            },
+          ],
+        },
+      ],
+    })
+
+    expect(summary).toMatchObject({
+      total: 4,
+      updated: 4,
+      failed: 0,
+      status: syncStatuses.SUCCESS,
+    })
+    expect(summary.samples.map((sample) => sample.metricCode)).toEqual([
+      metricCodes.AIR_HUMIDITY,
+      metricCodes.AIR_TEMPERATURE,
+      metricCodes.SOIL_MOISTURE,
+      metricCodes.SOIL_PH,
+    ])
+    expect(summary.samples.map((sample) => sample.value)).toEqual([
+      46.099998474121094,
+      26.399999618530273,
+      0,
+      9,
+    ])
+  })
+
   it("records schema mismatch failures for unmapped points", () => {
     const summary = createRenkeSyncSummary({
       devices: [
