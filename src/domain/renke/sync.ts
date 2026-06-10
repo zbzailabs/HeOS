@@ -6,6 +6,7 @@ import {
   type SyncStatus,
 } from "../standards/enums"
 import {
+  createTelemetryWritePlan,
   normalizeTelemetrySample,
   type TelemetrySample,
   type TelemetrySource,
@@ -44,6 +45,10 @@ export type RenkeRealtimeDevice = {
   deviceAddr?: string
   deviceName?: string
   deviceType?: string
+  devicelng?: string | number
+  devicelat?: string | number
+  lng?: string | number
+  lat?: string | number
   status?: string
   data?: RenkeRealtimeDataPoint[] | Record<string, unknown>
 }
@@ -64,6 +69,43 @@ export type RenkeSyncSummary = {
   samples: TelemetrySample[]
   failures: RenkeSyncFailure[]
 }
+
+export type RenkeSyncRunInput = {
+  traceId: string
+  startedAt: string
+  finishedAt: string
+  deviceCount: number
+  successCount: number
+  failedCount: number
+  status: SyncStatus
+  errorCode?: string | null
+  errorMessage?: string | null
+  queueMessageId?: string | null
+}
+
+export type RenkeD1Database = {
+  prepare(sql: string): {
+    bind(...values: unknown[]): {
+      run(): Promise<unknown>
+    }
+  }
+}
+
+export type RenkeD1SyncRepository = ReturnType<typeof createRenkeD1SyncRepository>
+
+export type RenkeRetryPlan =
+  | {
+      shouldRetry: true
+      queueName: "renke-sync-retry"
+      delaySeconds: number
+      nextAttempt: number
+      reason: RenkeSyncErrorCode
+    }
+  | {
+      shouldRetry: false
+      reason: RenkeSyncErrorCode
+      nextAttempt: number
+    }
 
 const renkeMetricMappings: readonly {
   patterns: readonly string[]
@@ -239,6 +281,286 @@ export function classifyRenkeClientError(error: unknown): RenkeSyncFailure {
   }
 }
 
+export function resolveRenkeHistoryEndpoint(deviceType: string | undefined) {
+  switch (deviceType) {
+    case "met":
+      return "/api/v2.0/met/history/getHistoryDataList"
+    case "soil":
+      return "/api/v2.0/soil/history/getHistoryDataList"
+    case "irrigation":
+      return "/api/v2.0/irrigation/device/getDeviceHistoryList"
+    case "irrigation2":
+    case "irrigation3.1":
+    case "irrigation3.3":
+      return "/api/v2.0/irrigation/device/getDeviceHistoryList"
+    default:
+      return null
+  }
+}
+
+export function findRenkeDeviceByAddr(
+  devices: readonly RenkeRealtimeDevice[],
+  deviceAddr: string,
+) {
+  return devices.find((device) => device.deviceAddr === deviceAddr) ?? null
+}
+
+export function createRenkeRetryPlan(
+  failure: RenkeSyncFailure,
+  currentAttempt: number,
+): RenkeRetryPlan {
+  const nextAttempt = currentAttempt + 1
+  const retryable =
+    failure.code === renkeSyncErrorCodes.AUTH_TIMEOUT ||
+    failure.code === renkeSyncErrorCodes.SOURCE_TIMEOUT
+
+  if (!retryable || currentAttempt >= 3) {
+    return {
+      shouldRetry: false,
+      reason: failure.code,
+      nextAttempt,
+    }
+  }
+
+  return {
+    shouldRetry: true,
+    queueName: "renke-sync-retry",
+    delaySeconds: Math.min(currentAttempt * 60, 300),
+    nextAttempt,
+    reason: failure.code,
+  }
+}
+
+export function createRenkeD1SyncRepository(db: RenkeD1Database) {
+  return {
+    async upsertDevice(device: RenkeRealtimeDevice, lastSeenAt: string) {
+      if (!device.deviceAddr) {
+        return false
+      }
+
+      await db
+        .prepare(
+          `INSERT INTO heos_devices (
+            id,
+            tenant_id,
+            site_id,
+            external_device_id,
+            name,
+            device_type,
+            provider_status,
+            online_status,
+            last_seen_at,
+            status,
+            lng,
+            lat,
+            updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
+          ON CONFLICT (tenant_id, external_device_id) DO UPDATE SET
+            name = excluded.name,
+            device_type = excluded.device_type,
+            provider_status = excluded.provider_status,
+            online_status = excluded.online_status,
+            last_seen_at = excluded.last_seen_at,
+            lng = excluded.lng,
+            lat = excluded.lat,
+            updated_at = excluded.updated_at`,
+        )
+        .bind(
+          createRenkeDeviceId(device.deviceAddr),
+          renkeTenantId,
+          renkeSiteId,
+          device.deviceAddr,
+          device.deviceName ?? device.deviceAddr,
+          device.deviceType ?? "unknown",
+          device.status ?? "unknown",
+          normalizeRenkeOnlineStatus(device.status),
+          lastSeenAt,
+          normalizeCoordinate(device.lng ?? device.devicelng),
+          normalizeCoordinate(device.lat ?? device.devicelat),
+          lastSeenAt,
+        )
+        .run()
+
+      return true
+    },
+
+    async writeTelemetrySample(sample: TelemetrySample) {
+      const plan = createTelemetryWritePlan(sample)
+      const latest = plan.latest.record
+      const history = plan.history.record
+
+      await db
+        .prepare(
+          `INSERT INTO heos_telemetry_latest (
+            id,
+            tenant_id,
+            site_id,
+            device_id,
+            metric_code,
+            value,
+            unit,
+            quality,
+            source,
+            source_sample_id,
+            raw_payload_hash,
+            observed_at,
+            ingested_at,
+            updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT (tenant_id, site_id, device_id, metric_code) DO UPDATE SET
+            value = excluded.value,
+            unit = excluded.unit,
+            quality = excluded.quality,
+            source = excluded.source,
+            source_sample_id = excluded.source_sample_id,
+            raw_payload_hash = excluded.raw_payload_hash,
+            observed_at = excluded.observed_at,
+            ingested_at = excluded.ingested_at,
+            updated_at = excluded.updated_at
+          WHERE excluded.observed_at >= heos_telemetry_latest.observed_at`,
+        )
+        .bind(
+          latest.id,
+          latest.tenantId,
+          latest.siteId,
+          latest.deviceId,
+          latest.metricCode,
+          latest.value,
+          latest.unit,
+          latest.quality,
+          latest.source,
+          latest.sourceSampleId,
+          latest.rawPayloadHash,
+          latest.observedAt,
+          latest.ingestedAt,
+          latest.ingestedAt,
+        )
+        .run()
+
+      await db
+        .prepare(
+          `INSERT INTO heos_telemetry_history (
+            id,
+            sample_key,
+            tenant_id,
+            site_id,
+            device_id,
+            metric_code,
+            value,
+            unit,
+            quality,
+            source,
+            source_sample_id,
+            raw_payload_hash,
+            observed_at,
+            ingested_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT (sample_key) DO NOTHING`,
+        )
+        .bind(
+          history.id,
+          history.sampleKey,
+          history.tenantId,
+          history.siteId,
+          history.deviceId,
+          history.metricCode,
+          history.value,
+          history.unit,
+          history.quality,
+          history.source,
+          history.sourceSampleId,
+          history.rawPayloadHash,
+          history.observedAt,
+          history.ingestedAt,
+        )
+        .run()
+    },
+
+    async recordSyncRun(input: RenkeSyncRunInput) {
+      await db
+        .prepare(
+          `INSERT INTO heos_sync_runs (
+            id,
+            trace_id,
+            tenant_id,
+            provider_code,
+            started_at,
+            finished_at,
+            device_count,
+            success_count,
+            failed_count,
+            status,
+            error_code,
+            error_message,
+            queue_message_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          createRenkeSyncRunId(input.traceId, input.startedAt),
+          input.traceId,
+          renkeTenantId,
+          renkeProviderId,
+          input.startedAt,
+          input.finishedAt,
+          input.deviceCount,
+          input.successCount,
+          input.failedCount,
+          input.status,
+          input.errorCode ?? null,
+          input.errorMessage ?? null,
+          input.queueMessageId ?? null,
+        )
+        .run()
+    },
+  }
+}
+
+export async function persistRenkeSyncToD1(
+  repository: RenkeD1SyncRepository,
+  input: {
+    traceId: string
+    startedAt: string
+    finishedAt: string
+    devices: readonly RenkeRealtimeDevice[]
+    summary: RenkeSyncSummary
+  },
+) {
+  let deviceWrites = 0
+  let latestWrites = 0
+  let historyWrites = 0
+
+  for (const device of input.devices) {
+    if (await repository.upsertDevice(device, input.summary.ts)) {
+      deviceWrites += 1
+    }
+  }
+
+  for (const sample of input.summary.samples) {
+    await repository.writeTelemetrySample(sample)
+    latestWrites += 1
+    historyWrites += 1
+  }
+
+  await repository.recordSyncRun({
+    traceId: input.traceId,
+    startedAt: input.startedAt,
+    finishedAt: input.finishedAt,
+    deviceCount: input.devices.length,
+    successCount: input.summary.updated,
+    failedCount: input.summary.failed,
+    status: input.summary.status,
+    errorCode: input.summary.failures[0]?.code ?? null,
+    errorMessage: input.summary.failures[0]?.message ?? null,
+  })
+
+  return {
+    deviceWrites,
+    latestWrites,
+    historyWrites,
+    syncRunWrites: 1,
+  }
+}
+
 export function resolveRenkeMetric(point: RenkeRealtimeDataPoint) {
   const label = String(
     point.name ?? point.factorName ?? point.nodeName ?? point.key ?? "",
@@ -247,6 +569,35 @@ export function resolveRenkeMetric(point: RenkeRealtimeDataPoint) {
   return renkeMetricMappings.find((mapping) =>
     mapping.patterns.some((pattern) => label.includes(pattern.toLowerCase())),
   )
+}
+
+function createRenkeDeviceId(deviceAddr: string) {
+  return `device-renke-${deviceAddr}`
+}
+
+function createRenkeSyncRunId(traceId: string, startedAt: string) {
+  return `sync-renke-${createStableHash(`${traceId}:${startedAt}`)}`
+}
+
+function normalizeRenkeOnlineStatus(status: string | undefined) {
+  if (status === "online" || status === "alarm") {
+    return "online"
+  }
+
+  if (status === "offline") {
+    return "offline"
+  }
+
+  return "unknown"
+}
+
+function normalizeCoordinate(value: string | number | undefined) {
+  if (value === undefined || value === "") {
+    return null
+  }
+
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : null
 }
 
 function isRenkePointAlarming(point: RenkeRealtimeDataPoint) {
@@ -260,12 +611,15 @@ function isRenkePointAlarming(point: RenkeRealtimeDataPoint) {
 }
 
 function createRenkePayloadHash(point: RenkeRealtimeDataPoint) {
-  const source = JSON.stringify(point)
+  return `renke-${createStableHash(JSON.stringify(point))}`
+}
+
+function createStableHash(source: string) {
   let hash = 0
 
   for (let index = 0; index < source.length; index += 1) {
     hash = (hash * 31 + source.charCodeAt(index)) >>> 0
   }
 
-  return `renke-${hash.toString(16)}`
+  return hash.toString(16)
 }

@@ -72,6 +72,21 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     plan: "后续将内存 repository 切换为 D1 repository。",
   },
   {
+    id: "S2-06",
+    title: "Renke D1 同步与失败重试",
+    specRef: "仁科设备接入 3-8 与验收 2",
+    issue: "#35",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S2-06-renke-d1-sync-retry.md",
+      "src/domain/renke/sync.ts",
+      "src/routes/api/providers/renke/sync.ts",
+    ],
+    gap: null,
+    plan: "Cloudflare Queues 绑定接入后开启真实队列投递。",
+  },
+  {
     id: "S2-02",
     title: "遥测查询 API",
     specRef: "Spec 5.2 遥测查询",
