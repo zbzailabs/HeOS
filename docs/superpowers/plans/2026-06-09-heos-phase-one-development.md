@@ -144,6 +144,22 @@ Create `src/domain/rbac/access-control.ts` with single-source definitions for pe
 
 Create `src/domain/rbac/access-control.test.ts` covering permission-code uniqueness, data-scope uniqueness, menu permission references, D1 table coverage, key indexes, and SQLite-compatible column choices.
 
+- [ ] **Task S2-04 Step 1: Write server access spec**
+
+Create `docs/specs/S2-04-server-access-functions.md` to define service-side access context, permission checks, menu filtering, and the temporary bootstrap-admin boundary before D1-backed authorization is wired.
+
+- [ ] **Task S2-04 Step 2: Add access policy functions**
+
+Create `src/domain/rbac/access-policy.ts` with pure functions for resolving the current access context, checking permissions, filtering console menus, and producing a safe access summary.
+
+- [ ] **Task S2-04 Step 3: Add TanStack Server Functions**
+
+Create `src/lib/access.ts` with `getCurrentAccessContext`, `getCurrentAccessSummary`, `getCurrentConsoleMenu`, and `checkCurrentPermission`. These functions must read the current app session and apply the service-side access policy.
+
+- [ ] **Task S2-04 Step 4: Add focused tests**
+
+Create `src/domain/rbac/access-policy.test.ts` covering anonymous access, bootstrap administrator access, readonly access, menu filtering, and high-risk permission rejection.
+
 ### M2: Alerting and Rules
 
 **Issues:** #7, #11
