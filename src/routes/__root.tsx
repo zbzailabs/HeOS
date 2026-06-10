@@ -4,9 +4,8 @@ import {
   Scripts,
   createRootRoute,
   redirect,
+  useRouterState,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
 import Footer from '../components/Footer'
 import Header from '../components/Header'
 import { getCurrentUser } from '../lib/auth'
@@ -17,7 +16,7 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
-    const isPublicRoute = location.pathname === '/login'
+    const isPublicRoute = location.pathname === '/login' || location.pathname === '/'
     const user = await getCurrentUser()
 
     if (!user && !isPublicRoute) {
@@ -40,7 +39,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'HeOS 作物种植一体化服务与智能管理平台',
       },
     ],
     links: [
@@ -56,6 +55,13 @@ export const Route = createRootRoute({
 
 function RootApp() {
   const { user } = Route.useRouteContext()
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const isDemoHome = pathname === '/'
+
+  if (isDemoHome) {
+    return <Outlet />
+  }
+
   return (
     <>
       <Header user={user} />
@@ -67,24 +73,13 @@ function RootApp() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
         {children}
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
         <Scripts />
       </body>
     </html>

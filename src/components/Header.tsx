@@ -25,7 +25,7 @@ export default function Header({ user }: HeaderProps) {
             className="inline-flex items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm text-[var(--sea-ink)] no-underline shadow-[0_8px_24px_rgba(30,90,72,0.08)] sm:px-4 sm:py-2"
           >
             <span className="h-2 w-2 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)]" />
-            TanStack Start
+            HeOS
           </Link>
         </h2>
 
@@ -35,14 +35,14 @@ export default function Header({ user }: HeaderProps) {
             className="nav-link"
             activeProps={{ className: 'nav-link is-active' }}
           >
-            Home
+            工作台
           </Link>
           <Link
             to="/about"
             className="nav-link"
             activeProps={{ className: 'nav-link is-active' }}
           >
-            About
+            关于
           </Link>
           <a
             href="https://tanstack.com/start/latest/docs/framework/react/overview"
@@ -50,7 +50,7 @@ export default function Header({ user }: HeaderProps) {
             target="_blank"
             rel="noreferrer"
           >
-            Docs
+            TanStack 文档
           </a>
           {user ? (
             <details className="relative w-full sm:w-auto">
@@ -62,13 +62,13 @@ export default function Header({ user }: HeaderProps) {
                   href="/demo/prisma"
                   className="block rounded-lg px-3 py-2 text-sm text-[var(--sea-ink-soft)] no-underline transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)]"
                 >
-                  Prisma
+                  Prisma 示例
                 </a>
                 <a
                   href="/demo/neon"
                   className="block rounded-lg px-3 py-2 text-sm text-[var(--sea-ink-soft)] no-underline transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)]"
                 >
-                  Neon
+                  Neon 示例
                 </a>
               </div>
             </details>
