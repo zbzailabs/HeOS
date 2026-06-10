@@ -89,10 +89,13 @@ HeOS 一期开发计划已完成梳理。
 - Create: `docs/specs/S0-02-unified-enums.md`
 - Create: `docs/specs/S0-03-admin-rbac-console.md`
 - Create: `db/migrations/0002_heos_standard_dictionary.sql`
+- Create: `db/migrations/0003_heos_telemetry_core.sql`
 - Create: `src/domain/standards/dictionary.ts`
 - Create: `src/domain/standards/dictionary.test.ts`
 - Create: `src/domain/standards/enums.ts`
 - Create: `src/domain/standards/enums.test.ts`
+- Create: `src/domain/telemetry/model.ts`
+- Create: `src/domain/telemetry/model.test.ts`
 - Later tasks create D1 schema and persistence modules for dictionary, telemetry, alert, and audit records.
 
 - [x] **Task #4 Step 1: Write S0-01 spec**
@@ -146,6 +149,33 @@ pnpm build
 - [ ] **Task #5 Step 5: Update Issue #5**
 
 Post a GitHub comment with changed files, validation status, and remaining integration points.
+
+- [x] **Task #6 Step 1: Write S1-01 spec**
+
+Create `docs/specs/S1-01-telemetry-latest-history.md` with the TelemetryLatest and TelemetryHistory boundary, D1 constraints, idempotent write strategy, history query window, stable cursor pagination, and validation commands.
+
+- [x] **Task #6 Step 2: Add D1 migration**
+
+Create `db/migrations/0003_heos_telemetry_core.sql` with D1-compatible `heos_telemetry_latest` and `heos_telemetry_history` tables, the `tenant_id/site_id/device_id/metric_code` latest unique constraint, the history `sample_key` unique constraint, and query indexes.
+
+- [x] **Task #6 Step 3: Add telemetry model source**
+
+Create `src/domain/telemetry/model.ts` with telemetry sample normalization, latest and history record IDs, idempotent write plans, latest-record resolution, history query plans, and stable in-memory pagination helpers.
+
+- [x] **Task #6 Step 4: Add focused tests**
+
+Create `src/domain/telemetry/model.test.ts` covering default units and quality, invalid units, latest uniqueness, stale-sample handling, history idempotence, time-window validation, stable pagination, and D1 migration constraints.
+
+- [x] **Task #6 Step 5: Validate and update Issue #6**
+
+Run:
+
+```bash
+pnpm test
+pnpm build
+```
+
+Post changed files, validation status, and remaining integration points to Issue #6.
 
 - [ ] **Task S0-03 Step 1: Write admin RBAC and console shell spec**
 
