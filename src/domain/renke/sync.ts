@@ -173,6 +173,11 @@ const renkeMetricMappings: readonly {
     unit: "lux",
   },
   {
+    patterns: ["雨量", "降雨", "rainfall", "precipitation"],
+    metricCode: metricCodes.RAINFALL,
+    unit: "mm",
+  },
+  {
     patterns: ["二氧化碳", "co2"],
     metricCode: metricCodes.CO2,
     unit: "ppm",
@@ -768,6 +773,10 @@ function createRenkeAlertRows(sample: TelemetrySample) {
   const above = threshold?.upper !== undefined && sample.value > threshold.upper
 
   if (threshold && (below || above)) {
+    if (shouldSuppressExpectedFieldStateThreshold(sample)) {
+      return alerts
+    }
+
     alerts.push({
       id: createStableAlertId(sample, "threshold"),
       tenantId: sample.tenantId,
@@ -836,10 +845,7 @@ function shouldSkipRenkePoint(point: RenkeRealtimeDataPoint) {
     point.nodeType === "5" ||
     point.factorType === 2 ||
     point.factorType === "2" ||
-    point.valveStatus !== undefined ||
-    label.includes("雨量") ||
-    label.includes("rainfall") ||
-    label.includes("precipitation")
+    point.valveStatus !== undefined
   )
 }
 
@@ -851,6 +857,16 @@ function normalizeRenkeDeviceId(deviceId: string) {
   return deviceId.startsWith("device-renke-")
     ? deviceId
     : createRenkeDeviceId(deviceId)
+}
+
+function shouldSuppressExpectedFieldStateThreshold(sample: TelemetrySample) {
+  const deviceId = normalizeRenkeDeviceId(sample.deviceId)
+
+  return (
+    deviceId === "device-renke-40406816" &&
+    (sample.metricCode === metricCodes.SOIL_MOISTURE ||
+      sample.metricCode === metricCodes.SOIL_PH)
+  )
 }
 
 function createRenkeSyncRunId(traceId: string, startedAt: string) {

@@ -123,8 +123,8 @@ describe("renke sync normalization", () => {
     })
 
     expect(summary).toMatchObject({
-      total: 4,
-      updated: 4,
+      total: 5,
+      updated: 5,
       failed: 0,
       status: syncStatuses.SUCCESS,
     })
@@ -133,12 +133,14 @@ describe("renke sync normalization", () => {
       metricCodes.AIR_TEMPERATURE,
       metricCodes.SOIL_MOISTURE,
       metricCodes.SOIL_PH,
+      metricCodes.RAINFALL,
     ])
     expect(summary.samples.map((sample) => sample.value)).toEqual([
       46.099998474121094,
       26.399999618530273,
       0,
       9,
+      0,
     ])
   })
 
@@ -249,14 +251,14 @@ describe("renke sync normalization", () => {
     )
   })
 
-  it("generates open alerts when Renke telemetry is suspect or outside production thresholds", async () => {
+  it("generates open alerts when non-field-exempt Renke telemetry is suspect or outside production thresholds", async () => {
     const db = createFakeD1Database()
     const repository = createRenkeD1SyncRepository(db)
     const summary = createRenkeSyncSummary({
       now: "2026-06-10T08:00:00.000Z",
       devices: [
         {
-          deviceAddr: "40406816",
+          deviceAddr: "other-device",
           deviceName: "腾龙小学智慧农场",
           deviceType: "soil",
           status: "online",
@@ -274,7 +276,7 @@ describe("renke sync normalization", () => {
       finishedAt: "2026-06-10T08:00:00.000Z",
       devices: [
         {
-          deviceAddr: "40406816",
+          deviceAddr: "other-device",
           deviceName: "腾龙小学智慧农场",
           deviceType: "soil",
           status: "online",
@@ -286,19 +288,69 @@ describe("renke sync normalization", () => {
     expect(db.tables.heos_alerts).toEqual([
       expect.objectContaining({
         tenant_id: "tenant-tenglong-school",
-        device_id: "device-renke-40406816",
+        device_id: "device-renke-other-device",
         alert_type: "threshold",
         metric_code: metricCodes.SOIL_MOISTURE,
         status: "open",
       }),
       expect.objectContaining({
         tenant_id: "tenant-tenglong-school",
-        device_id: "device-renke-40406816",
+        device_id: "device-renke-other-device",
         alert_type: "data_quality",
         metric_code: metricCodes.SOIL_PH,
         status: "open",
       }),
     ])
+  })
+
+  it("keeps Tenglong soil probe readings but suppresses expected field-state threshold alerts", async () => {
+    const db = createFakeD1Database()
+    const repository = createRenkeD1SyncRepository(db)
+    const summary = createRenkeSyncSummary({
+      now: "2026-06-10T22:49:13.334Z",
+      devices: [
+        {
+          deviceAddr: "40406816",
+          deviceName: "腾龙小学智慧农场",
+          deviceType: "irrigation3.3",
+          status: "online",
+          data: [
+            { nodeName: "土壤水分", factorId: "40406816_3", temValue: 0 },
+            { nodeName: "土壤PH", factorId: "40406816_5", temValue: 9 },
+            { nodeName: "温度", factorId: "40406816_1", temValue: 26.3 },
+          ],
+        },
+      ],
+    })
+
+    await persistRenkeSyncToD1(repository, {
+      traceId: "trace-renke-field-state",
+      startedAt: "2026-06-10T22:49:12.000Z",
+      finishedAt: "2026-06-10T22:49:13.334Z",
+      devices: [
+        {
+          deviceAddr: "40406816",
+          deviceName: "腾龙小学智慧农场",
+          deviceType: "irrigation3.3",
+          status: "online",
+        },
+      ],
+      summary,
+    })
+
+    expect(db.tables.heos_telemetry_latest).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          device_id: "device-renke-40406816",
+          metric_code: metricCodes.SOIL_MOISTURE,
+        }),
+        expect.objectContaining({
+          device_id: "device-renke-40406816",
+          metric_code: metricCodes.SOIL_PH,
+        }),
+      ]),
+    )
+    expect(db.tables.heos_alerts).toHaveLength(0)
   })
 
   it("records provider failures and creates bounded retry plan", async () => {

@@ -250,13 +250,22 @@ export const baseStandardDictionaryEntries = [
     sortOrder: 60,
   }),
   createEntry({
+    id: "std-dict-unit-mm-v0-1",
+    category: standardDictionaryCategories.UNIT,
+    code: "mm",
+    label: "毫米",
+    description: "降雨量、灌溉量等长度单位，符号 mm。",
+    unit: null,
+    sortOrder: 70,
+  }),
+  createEntry({
     id: "std-dict-unit-volt-v0-1",
     category: standardDictionaryCategories.UNIT,
     code: "volt",
     label: "伏特",
     description: "电压单位，符号 V。",
     unit: null,
-    sortOrder: 70,
+    sortOrder: 80,
   }),
   createEntry({
     id: "std-dict-unit-dbm-v0-1",
@@ -265,7 +274,7 @@ export const baseStandardDictionaryEntries = [
     label: "毫瓦分贝",
     description: "信号强度单位 dBm。",
     unit: null,
-    sortOrder: 80,
+    sortOrder: 90,
   }),
   createEntry({
     id: "std-dict-metric-air-temperature-v0-1",
@@ -313,13 +322,22 @@ export const baseStandardDictionaryEntries = [
     sortOrder: 50,
   }),
   createEntry({
+    id: "std-dict-metric-rainfall-v0-1",
+    category: standardDictionaryCategories.METRIC,
+    code: metricCodes.RAINFALL,
+    label: "雨量",
+    description: "降雨量遥测指标。",
+    unit: metricDefinitions[metricCodes.RAINFALL].defaultUnit,
+    sortOrder: 60,
+  }),
+  createEntry({
     id: "std-dict-metric-co2-v0-1",
     category: standardDictionaryCategories.METRIC,
     code: metricCodes.CO2,
     label: "二氧化碳浓度",
     description: "空气二氧化碳浓度遥测指标。",
     unit: metricDefinitions[metricCodes.CO2].defaultUnit,
-    sortOrder: 60,
+    sortOrder: 70,
   }),
   createEntry({
     id: "std-dict-metric-soil-ec-v0-1",
@@ -328,7 +346,7 @@ export const baseStandardDictionaryEntries = [
     label: "土壤电导率",
     description: "土壤电导率遥测指标。",
     unit: metricDefinitions[metricCodes.SOIL_EC].defaultUnit,
-    sortOrder: 70,
+    sortOrder: 80,
   }),
   createEntry({
     id: "std-dict-metric-soil-ph-v0-1",
@@ -337,7 +355,7 @@ export const baseStandardDictionaryEntries = [
     label: "土壤酸碱度",
     description: "土壤 pH 遥测指标。",
     unit: metricDefinitions[metricCodes.SOIL_PH].defaultUnit,
-    sortOrder: 80,
+    sortOrder: 90,
   }),
   createEntry({
     id: "std-dict-metric-battery-voltage-v0-1",
@@ -346,7 +364,7 @@ export const baseStandardDictionaryEntries = [
     label: "电池电压",
     description: "设备电池电压遥测指标。",
     unit: metricDefinitions[metricCodes.BATTERY_VOLTAGE].defaultUnit,
-    sortOrder: 90,
+    sortOrder: 100,
   }),
   createEntry({
     id: "std-dict-metric-signal-strength-v0-1",
@@ -355,7 +373,7 @@ export const baseStandardDictionaryEntries = [
     label: "信号强度",
     description: "设备通信信号强度遥测指标。",
     unit: metricDefinitions[metricCodes.SIGNAL_STRENGTH].defaultUnit,
-    sortOrder: 100,
+    sortOrder: 110,
   }),
   createEntry({
     id: "std-dict-device-capability-telemetry-v0-1",

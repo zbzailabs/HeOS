@@ -28,6 +28,7 @@ describe("standard enum definitions", () => {
     expect(getMetricDefaultUnit(metricCodes.AIR_HUMIDITY)).toBe("percent")
     expect(getMetricDefaultUnit(metricCodes.SOIL_EC)).toBe("us_cm")
     expect(getMetricDefaultUnit(metricCodes.SOIL_PH)).toBe("ph")
+    expect(getMetricDefaultUnit(metricCodes.RAINFALL)).toBe("mm")
   })
 
   it("keeps alert levels unique and ordered", () => {
@@ -51,4 +52,3 @@ describe("standard enum definitions", () => {
     expect(Object.values(syncStatuses)).toContain("source_timeout")
   })
 })
-

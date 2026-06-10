@@ -4,6 +4,7 @@ export const metricCodes = {
   SOIL_TEMPERATURE: "soil_temperature",
   SOIL_MOISTURE: "soil_moisture",
   ILLUMINANCE: "illuminance",
+  RAINFALL: "rainfall",
   CO2: "co2",
   SOIL_EC: "soil_ec",
   SOIL_PH: "soil_ph",
@@ -33,6 +34,10 @@ export const metricDefinitions = {
   [metricCodes.ILLUMINANCE]: {
     label: "Illuminance",
     defaultUnit: "lux",
+  },
+  [metricCodes.RAINFALL]: {
+    label: "Rainfall",
+    defaultUnit: "mm",
   },
   [metricCodes.CO2]: {
     label: "Carbon dioxide",
@@ -127,4 +132,3 @@ export function getMetricDefaultUnit(metricCode: MetricCode) {
 export function getAlertLevelOrder(alertLevel: AlertLevel) {
   return alertLevelDefinitions[alertLevel].order
 }
-

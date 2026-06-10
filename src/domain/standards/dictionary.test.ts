@@ -144,6 +144,12 @@ describe("standard dictionary definitions", () => {
       code: metricCodes.SOIL_PH,
       unit: metricDefinitions[metricCodes.SOIL_PH].defaultUnit,
     })
+    expect(
+      findDictionaryEntry(standardDictionaryCategories.METRIC, metricCodes.RAINFALL),
+    ).toMatchObject({
+      code: metricCodes.RAINFALL,
+      unit: "mm",
+    })
   })
 })
 
@@ -172,6 +178,8 @@ describe("standard dictionary D1 migration", () => {
     expect(migrationSql).toContain("INSERT OR IGNORE INTO heos_standard_dictionary_changes")
     expect(migrationSql).toContain("'crop', 'tomato'")
     expect(migrationSql).toContain("'metric', 'soil_ph'")
+    expect(migrationSql).toContain("'unit', 'mm'")
+    expect(migrationSql).toContain("'metric', 'rainfall'")
     expect(migrationSql).toContain("'alert_level', 'critical'")
     expect(migrationSql).toContain("'S0-01 initial dictionary baseline'")
     expect(migrationSql).toContain("FROM heos_standard_dictionary")

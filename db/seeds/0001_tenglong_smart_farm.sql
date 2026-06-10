@@ -254,7 +254,7 @@ INSERT INTO heos_devices (
   '40406816',
   '仁科四情测报设备 40406816',
   'irrigation3.3',
-  '["air_temperature","air_humidity","soil_temperature","soil_moisture","illuminance","co2","battery_voltage","signal_strength"]',
+  '["air_temperature","air_humidity","illuminance","soil_temperature","soil_moisture","soil_ph","rainfall"]',
   NULL,
   NULL,
   'unknown',
