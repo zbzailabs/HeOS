@@ -128,6 +128,22 @@ Create a GitHub Issue that records:
 - Excluded scope: Java/Spring/MyBatis/Shiro, Vue/Pinia/NaiveUI/UnoCSS, generic CRUD generator migration.
 - Acceptance: future work includes `Tenant`, `OrgUnit`, `User`, `Role`, `Menu`, `Permission`, `DataScope`, `AuditLog`, `/console` shell, service-side permission checks, service-side menu filtering, and current public demo retention.
 
+- [ ] **Task S1-04 Step 1: Write RBAC D1 model spec**
+
+Create `docs/specs/S1-04-rbac-d1-model.md` to define the minimal D1 model for permissions, data scopes, menus, role bindings, user bindings, and audit logs.
+
+- [ ] **Task S1-04 Step 2: Add D1 migration**
+
+Create `db/migrations/0001_heos_rbac_core.sql` with D1-compatible `CREATE TABLE` and index statements for `Tenant`, `OrgUnit`, `User`, `Post`, `Role`, `Menu`, `Permission`, `RolePermission`, `UserRole`, `DataScope`, `RoleDataScope`, and `AuditLog`.
+
+- [ ] **Task S1-04 Step 3: Add TypeScript source definitions**
+
+Create `src/domain/rbac/access-control.ts` with single-source definitions for permission codes, data scopes, console menu metadata, and RBAC table names.
+
+- [ ] **Task S1-04 Step 4: Add focused tests**
+
+Create `src/domain/rbac/access-control.test.ts` covering permission-code uniqueness, data-scope uniqueness, menu permission references, D1 table coverage, key indexes, and SQLite-compatible column choices.
+
 ### M2: Alerting and Rules
 
 **Issues:** #7, #11
