@@ -1,3 +1,5 @@
+/// <reference types="vitest" />
+
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
 
@@ -12,6 +14,9 @@ const isVitest = process.env.VITEST === 'true'
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
+  test: {
+    exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
+  },
   plugins: [
     devtools(),
     neon,
