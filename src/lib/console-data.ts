@@ -114,16 +114,22 @@ async function readConsoleD1Results(
 export async function readAiProviderOperations(
   db: CoreD1Database,
   tenantId: string,
+  now = new Date(),
 ) {
+  const metricsWindowHours = 24
+  const windowStart = new Date(
+    now.getTime() - metricsWindowHours * 60 * 60 * 1000,
+  ).toISOString()
   const result = await db
     .prepare(
       `SELECT status, latency_ms, total_tokens, failure_code, created_at
        FROM heos_ai_provider_metrics
        WHERE tenant_id = ?
+         AND created_at >= ?
        ORDER BY created_at DESC
        LIMIT 50`,
     )
-    .bind(tenantId)
+    .bind(tenantId, windowStart)
     .all<{
       status: string
       latency_ms: number | null
@@ -156,6 +162,8 @@ export async function readAiProviderOperations(
     ),
     latestFailureCode:
       recentProviderFailures.find((row) => row.failure_code)?.failure_code ?? null,
+    metricsWindowHours,
+    metricsUpdatedAt: rows[0]?.created_at ?? null,
   }
 }
 
@@ -166,6 +174,8 @@ function baseAiProviderOperations() {
     averageLatencyMs: null,
     totalTokens: 0,
     latestFailureCode: null,
+    metricsWindowHours: 24,
+    metricsUpdatedAt: null,
   }
 }
 

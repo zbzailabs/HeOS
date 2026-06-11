@@ -41,6 +41,8 @@ export type ConsoleD1WorkbenchData = {
     | "averageLatencyMs"
     | "totalTokens"
     | "latestFailureCode"
+    | "metricsWindowHours"
+    | "metricsUpdatedAt"
   >
 }
 

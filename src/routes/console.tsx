@@ -682,6 +682,14 @@ function AiAssistantPanel({
             label="Token"
             value={String(aiAssistant.operations.totalTokens)}
           />
+          <MiniStat
+            label="统计窗口"
+            value={`${aiAssistant.operations.metricsWindowHours}h`}
+          />
+          <MiniStat
+            label="更新时间"
+            value={aiAssistant.operations.metricsUpdatedAt ?? 'none'}
+          />
         </div>
 
         <div className="rounded-lg border border-[#f0d7a8] bg-[#fffaf0] px-3 py-3 md:col-span-2">

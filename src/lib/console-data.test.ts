@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { readAiProviderOperations } from "./console-data"
 
 describe("console D1 AI provider operations", () => {
-  it("summarizes recent provider metrics for the console AI panel", async () => {
+  it("summarizes provider metrics from the last 24 hours for the console AI panel", async () => {
     const db = createFakeD1([
       {
         status: "success",
@@ -24,16 +24,43 @@ describe("console D1 AI provider operations", () => {
     const operations = await readAiProviderOperations(
       db,
       "tenant-tenglong-school",
+      new Date("2026-06-11T16:30:00.000Z"),
     )
 
     expect(db.sql).toContain("FROM heos_ai_provider_metrics")
-    expect(db.values).toEqual(["tenant-tenglong-school"])
+    expect(db.sql).toContain("created_at >= ?")
+    expect(db.values).toEqual([
+      "tenant-tenglong-school",
+      "2026-06-10T16:30:00.000Z",
+    ])
     expect(operations).toEqual({
       recentProviderCalls: 2,
       recentProviderFailures: 1,
       averageLatencyMs: 600,
       totalTokens: 1200,
       latestFailureCode: "DEEPSEEK_REQUEST_FAILED",
+      metricsWindowHours: 24,
+      metricsUpdatedAt: "2026-06-11T16:00:00.000Z",
+    })
+  })
+
+  it("keeps a stable 24 hour summary when no provider metrics are present", async () => {
+    const db = createFakeD1([])
+
+    const operations = await readAiProviderOperations(
+      db,
+      "tenant-tenglong-school",
+      new Date("2026-06-11T16:30:00.000Z"),
+    )
+
+    expect(operations).toEqual({
+      recentProviderCalls: 0,
+      recentProviderFailures: 0,
+      averageLatencyMs: null,
+      totalTokens: 0,
+      latestFailureCode: null,
+      metricsWindowHours: 24,
+      metricsUpdatedAt: null,
     })
   })
 })

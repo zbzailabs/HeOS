@@ -194,6 +194,8 @@ const aiAssistantOperations = {
   recentProviderFailures: 0,
   averageLatencyMs: null as number | null,
   totalTokens: 0,
+  metricsWindowHours: 24,
+  metricsUpdatedAt: null as string | null,
 }
 
 export function getConsoleDataWorkbench() {

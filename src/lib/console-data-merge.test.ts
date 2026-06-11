@@ -31,6 +31,8 @@ describe("console D1 workbench merge", () => {
         averageLatencyMs: 420,
         totalTokens: 1800,
         latestFailureCode: "DEEPSEEK_REQUEST_FAILED",
+        metricsWindowHours: 24,
+        metricsUpdatedAt: "2026-06-11T16:00:00.000Z",
       },
     })
 
@@ -43,6 +45,8 @@ describe("console D1 workbench merge", () => {
       recentProviderFailures: 1,
       averageLatencyMs: 420,
       totalTokens: 1800,
+      metricsWindowHours: 24,
+      metricsUpdatedAt: "2026-06-11T16:00:00.000Z",
     })
     expect(merged.aiAssistant.reviewQueue.emptyState).toBe(
       "当前没有待人工确认的 AI 建议。",
