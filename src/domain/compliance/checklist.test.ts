@@ -29,6 +29,9 @@ describe("compliance checklist", () => {
     expect(report).toContain("### S4-10 AI provider 观测证据")
     expect(report).toContain("Issue：#66")
     expect(report).toContain("docs/specs/S4-09-ai-provider-metrics-window.md")
+    expect(report).toContain("### S4-11 核心域 D1 与业务动作证据")
+    expect(report).toContain("Issue：#67")
+    expect(report).toContain("src/domain/production/actions.ts")
     expect(report).toContain("阻断项：0")
   })
 
@@ -56,5 +59,40 @@ describe("compliance checklist", () => {
         "src/lib/console-data.test.ts",
       ]),
     )
+  })
+
+  it("includes core D1 query and production action evidence in the release checklist", () => {
+    const checklist = getComplianceChecklist("2026-06-11T22:45:00.000Z")
+    const item = checklist.items.find((checklistItem) => checklistItem.id === "S4-11")
+
+    expect(item).toEqual(
+      expect.objectContaining({
+        title: "核心域 D1 与业务动作证据",
+        issue: "#67",
+        status: complianceStatuses.COVERED,
+        blocker: false,
+        gap: null,
+      }),
+    )
+    expect(item?.evidence).toEqual(
+      expect.arrayContaining([
+        "docs/specs/S4-11-core-d1-business-action-compliance.md",
+        "src/domain/core/d1-query.ts",
+        "src/lib/console-data.ts",
+        "src/domain/production/actions.ts",
+        "src/routes/api/core/alerts.ts",
+        "src/routes/api/core/agri-tasks.ts",
+      ]),
+    )
+
+    const coreItem = checklist.items.find(
+      (checklistItem) => checklistItem.id === "S2-05",
+    )
+    const alertItem = checklist.items.find(
+      (checklistItem) => checklistItem.id === "S3-01",
+    )
+
+    expect(coreItem?.plan).toContain("D1 查询证据")
+    expect(alertItem?.plan).toContain("告警状态流转")
   })
 })

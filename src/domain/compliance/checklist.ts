@@ -64,12 +64,15 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     blocker: false,
     evidence: [
       "docs/specs/S2-05-core-domain-query-api.md",
+      "docs/specs/S2-07-core-d1-query-api.md",
       "src/domain/core/query.ts",
       "src/domain/core/api.ts",
+      "src/domain/core/d1-query.ts",
+      "src/lib/console-data.ts",
       "src/routes/api/core/devices.ts",
     ],
     gap: null,
-    plan: "后续将内存 repository 切换为 D1 repository。",
+    plan: "继续在发布核验中引用 D1 查询证据和控制台 D1 数据合并结果。",
   },
   {
     id: "S2-06",
@@ -104,9 +107,14 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     issue: "#12",
     status: complianceStatuses.COVERED,
     blocker: false,
-    evidence: ["src/domain/alerts/offline.ts", "src/routes/console.tsx"],
+    evidence: [
+      "src/domain/alerts/offline.ts",
+      "src/domain/production/actions.ts",
+      "src/routes/api/core/alerts.ts",
+      "src/routes/console.tsx",
+    ],
     gap: null,
-    plan: "后续接入真实告警关闭和恢复审计。",
+    plan: "继续核验告警状态流转、恢复记录和审计写入结果。",
   },
   {
     id: "S3-02",
@@ -139,11 +147,14 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     blocker: false,
     evidence: [
       "docs/specs/S3-05-console-business-pages.md",
+      "docs/specs/S3-06-console-business-workflows.md",
       "src/domain/console/workbench.ts",
+      "src/domain/production/actions.ts",
+      "src/routes/api/core/agri-tasks.ts",
       "src/routes/console.tsx",
     ],
     gap: null,
-    plan: "后续按权限和 URL 结构拆分独立 CRUD 子路由。",
+    plan: "继续基于业务动作 API、农事记录和追溯归档证据扩展独立业务子路由。",
   },
   {
     id: "S4-02",
@@ -174,6 +185,27 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     ],
     gap: null,
     plan: "发布冻结报告持续引用 AI provider 指标、后台摘要和 24 小时窗口证据。",
+  },
+  {
+    id: "S4-11",
+    title: "核心域 D1 与业务动作证据",
+    specRef: "验收 2、验收 3、验收 7 与 #37/#38/#40",
+    issue: "#67",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S4-11-core-d1-business-action-compliance.md",
+      "docs/specs/S2-07-core-d1-query-api.md",
+      "docs/specs/S3-06-console-business-workflows.md",
+      "src/domain/core/d1-query.ts",
+      "src/lib/console-data.ts",
+      "src/domain/production/actions.ts",
+      "src/routes/api/core/alerts.ts",
+      "src/routes/api/core/agri-tasks.ts",
+      "src/domain/production/actions.test.ts",
+    ],
+    gap: null,
+    plan: "发布冻结报告持续引用核心域 D1 查询、控制台 D1 合并、告警状态流转、农事记录、追溯归档和审计写入证据。",
   },
 ]
 
@@ -234,9 +266,10 @@ export function renderComplianceReport(checklist: ComplianceChecklist) {
     "## 3. 下一迭代目标",
     "",
     "- 将演示数据切换为 D1 查询结果。",
-    "- 基于 S1-05 核心表继续补齐项目、作物、农事和追溯页面。",
+    "- 持续用 S4-11 证据核验核心域 D1 查询与业务动作 API。",
+    "- 基于 S1-05 核心表继续扩展项目、作物、农事和追溯独立页面。",
     "- 将仁科同步接入 Cron Triggers、Queues 和失败重试。",
-    "- 将告警关闭、恢复和审计记录接入真实业务表。",
+    "- 将告警、农事和追溯动作纳入下一轮生产回归记录。",
   )
 
   return `${lines.join("\n")}\n`
