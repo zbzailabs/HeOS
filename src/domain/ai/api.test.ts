@@ -91,6 +91,78 @@ describe("AI interaction POST API boundary", () => {
     })
     expect(db.statements).toHaveLength(0)
   })
+
+  it("creates an authorized draft and writes the interaction through D1", async () => {
+    const db = createFakeAiD1()
+    const result = await handleAiInteractionPost({
+      body: {
+        mode: "draft",
+        tenantId: "tenant-tenglong-school",
+        userId: "user-tenglong-admin",
+        scenario: aiScenarios.ALERT_EXPLANATION,
+        source: {
+          tenantId: "tenant-tenglong-school",
+          table: "heos_alerts",
+          targetId: "alert-soil-ph-critical",
+          title: "soil_ph critical 告警",
+          permissionCode: "alert:read",
+        },
+        humanConfirmationRequired: true,
+      },
+      db,
+      traceId: "trace-ai-api-draft-001",
+      now: "2026-06-11T12:30:00.000Z",
+    })
+
+    expect(result).toMatchObject({
+      status: 200,
+      body: {
+        traceId: "trace-ai-api-draft-001",
+        data: {
+          interactionId:
+            "ai-interaction|trace-ai-api-draft-001|alert_explanation|2026-06-11T12%3A30%3A00.000Z",
+          auditLogId:
+            "audit|trace-ai-api-draft-001|ai.interaction.create|2026-06-11T12%3A30%3A00.000Z",
+          draft: {
+            sourceTitle: "soil_ph critical 告警",
+            confirmationNotice: "高风险建议已进入人工确认。",
+          },
+        },
+      },
+    })
+    expect(db.statements).toHaveLength(2)
+  })
+
+  it("rejects high-risk draft requests without human confirmation", async () => {
+    const db = createFakeAiD1()
+    const result = await handleAiInteractionPost({
+      body: {
+        mode: "draft",
+        tenantId: "tenant-tenglong-school",
+        userId: "user-tenglong-admin",
+        scenario: aiScenarios.ALERT_EXPLANATION,
+        source: {
+          tenantId: "tenant-tenglong-school",
+          table: "heos_alerts",
+          targetId: "alert-soil-ph-critical",
+          title: "soil_ph critical 告警",
+          permissionCode: "alert:read",
+        },
+      },
+      db,
+      traceId: "trace-ai-api-draft-002",
+      now: "2026-06-11T12:30:00.000Z",
+    })
+
+    expect(result).toMatchObject({
+      status: 400,
+      body: {
+        traceId: "trace-ai-api-draft-002",
+        errors: [{ code: "AI_HUMAN_CONFIRMATION_REQUIRED" }],
+      },
+    })
+    expect(db.statements).toHaveLength(0)
+  })
 })
 
 function createFakeAiD1(): AiD1Database & {

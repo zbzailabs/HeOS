@@ -1,5 +1,11 @@
 import { defaultCoreTenantId } from "../core/api"
 import {
+  createAiAuthorizedDraftInput,
+  type AiAuthorizedDraft,
+  type AiAuthorizedDraftPlan,
+  type AiAuthorizedDraftInput,
+} from "./draft"
+import {
   aiScenarios,
   type AiInteractionResult,
   type AiInteractionValidationError,
@@ -16,7 +22,7 @@ import {
 export type AiInteractionPostBody =
   | {
       traceId: string
-      data: AiD1WriteSummary
+      data: AiD1WriteSummary & { draft?: AiAuthorizedDraft }
     }
   | {
       traceId: string
@@ -27,7 +33,7 @@ export type AiInteractionPostBody =
             message: string
           }
       )[]
-    }
+  }
 
 export type AiInteractionPostResult = {
   status: number
@@ -51,6 +57,46 @@ export async function handleAiInteractionPost(input: {
             message: "HEOS_DB binding is required for AI interaction writes.",
           },
         ],
+      },
+    }
+  }
+
+  if (isRecord(input.body) && input.body.mode === "draft") {
+    const parsed = parseAiInteractionDraftPostBody(
+      input.body,
+      input.traceId,
+      input.now,
+    )
+    if (!parsed.ok) {
+      return {
+        status: 400,
+        body: {
+          traceId: input.traceId,
+          errors: parsed.errors,
+        },
+      }
+    }
+
+    const writeResult = await createD1AiInteractionRepository(input.db)
+      .createInteraction(parsed.value.interactionInput)
+    if (!writeResult.ok) {
+      return {
+        status: 400,
+        body: {
+          traceId: input.traceId,
+          errors: writeResult.errors,
+        },
+      }
+    }
+
+    return {
+      status: 200,
+      body: {
+        traceId: input.traceId,
+        data: {
+          ...writeResult.value,
+          draft: parsed.value.draft,
+        },
       },
     }
   }
@@ -85,6 +131,31 @@ export async function handleAiInteractionPost(input: {
       data: writeResult.value,
     },
   }
+}
+
+export function parseAiInteractionDraftPostBody(
+  body: unknown,
+  traceId: string,
+  now: string,
+): AiInteractionResult<AiAuthorizedDraftPlan> {
+  if (!isRecord(body)) {
+    return invalidBody("JSON object body is required.")
+  }
+
+  const scenario = readScenario(body.scenario)
+  if (!scenario) {
+    return invalidBody("scenario is required.")
+  }
+
+  return createAiAuthorizedDraftInput({
+    traceId,
+    tenantId: readString(body.tenantId) ?? defaultCoreTenantId,
+    userId: readString(body.userId) ?? "user-tenglong-admin",
+    scenario,
+    source: readRetrievalSource(body.source),
+    humanConfirmationRequired: body.humanConfirmationRequired === true,
+    now,
+  })
 }
 
 export function parseAiInteractionPostBody(
@@ -147,6 +218,20 @@ function readRetrievalSources(value: unknown): AiRetrievalSource[] {
     title: readString(source.title) ?? "",
     permissionCode: readString(source.permissionCode) ?? "",
   }))
+}
+
+function readRetrievalSource(value: unknown): AiAuthorizedDraftInput["source"] {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  return {
+    tenantId: readString(value.tenantId) ?? "",
+    table: readString(value.table) ?? "",
+    targetId: readString(value.targetId) ?? "",
+    title: readString(value.title) ?? "",
+    permissionCode: readString(value.permissionCode) ?? "",
+  }
 }
 
 function readScenario(value: unknown): AiScenario | null {
