@@ -4,6 +4,7 @@ import { env } from "cloudflare:workers"
 import { getConsoleDataWorkbench } from "../domain/console/workbench"
 import { createD1CoreApiHandlers } from "../domain/core/api"
 import type { CoreD1Database } from "../domain/core/d1-query"
+import { mergeConsoleD1WorkbenchData } from "./console-data-merge"
 
 export const getCurrentConsoleDataWorkbench = createServerFn({
   method: "GET",
@@ -22,62 +23,7 @@ export const getCurrentConsoleDataWorkbench = createServerFn({
     return base
   }
 
-  const {
-    projectAssets,
-    deviceLedger,
-    alertCenter,
-    agriTasks,
-    traceArchives,
-    aiAssistant,
-    aiReviewQueue,
-    latestTelemetry,
-  } = d1Results
-
-  if (
-    !projectAssets.ok ||
-    !deviceLedger.ok ||
-    !alertCenter.ok ||
-    !agriTasks.ok ||
-    !traceArchives.ok ||
-    !aiAssistant.ok ||
-    !aiReviewQueue.ok
-  ) {
-    return base
-  }
-
-  return {
-    ...base,
-    projectAssets: projectAssets.value,
-    deviceLedger: deviceLedger.value,
-    alertCenter: {
-      ...alertCenter.value,
-      workflow: base.alertCenter.workflow,
-    },
-    agriTasks: {
-      ...agriTasks.value,
-      workflow: base.agriTasks.workflow,
-    },
-    traceArchives: {
-      ...traceArchives.value,
-      items: traceArchives.value.items.filter(
-        (archive) => archive.visibility === "public",
-      ),
-      publicFields: base.traceArchives.publicFields,
-    },
-    aiAssistant: {
-      ...aiAssistant.value,
-      reviewQueue: aiReviewQueue.value,
-      sourcePolicy: base.aiAssistant.sourcePolicy,
-    },
-    telemetry: {
-      ...base.telemetry,
-      productionLatest: latestTelemetry,
-      emptyState:
-        latestTelemetry.length > 0
-          ? "生产 D1 最近遥测已接入当前面板。"
-          : base.telemetry.emptyState,
-    },
-  }
+  return mergeConsoleD1WorkbenchData(base, d1Results)
 })
 
 async function readConsoleD1Results(
