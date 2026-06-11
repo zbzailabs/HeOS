@@ -18,6 +18,12 @@ import {
   type RenkeRealtimeDevice,
 } from "../../../../domain/renke/sync"
 import { createTraceId } from "../../../../domain/telemetry/api"
+import {
+  checkProductionWriteAccess,
+  productionWriteActions,
+} from "../../../../domain/rbac/production-write-auth"
+import type { AccessContext } from "../../../../domain/rbac/access-policy"
+import { readCurrentAccessContext } from "../../../../lib/access"
 
 type RenkeLoginResponse = {
   token?: string
@@ -35,14 +41,32 @@ type RenkeSyncSuccessInput = {
 export const Route = createFileRoute("/api/providers/renke/sync")({
   server: {
     handlers: {
-      POST: handleRenkeSyncPost,
+      POST: async () =>
+        handleRenkeSyncPost({
+          accessContext: await readCurrentAccessContext(),
+        }),
     },
   },
 })
 
-export async function handleRenkeSyncPost() {
+export async function handleRenkeSyncPost(input?: {
+  accessContext?: AccessContext | null
+  bypassAuth?: boolean
+}) {
   const traceId = createTraceId("renke")
   const startedAt = new Date().toISOString()
+
+  if (!input?.bypassAuth) {
+    const access = checkProductionWriteAccess({
+      context: input?.accessContext ?? null,
+      tenantId: renkeTenantId,
+      action: productionWriteActions.RENKE_SYNC,
+    })
+
+    if (!access.allowed) {
+      return json({ traceId, errors: access.errors }, { status: access.status })
+    }
+  }
 
   try {
     const input = await fetchRenkeSyncInput()

@@ -4,11 +4,16 @@ import { env } from "cloudflare:workers"
 
 import { createTraceId } from "../../../domain/telemetry/api"
 import {
+  checkProductionWriteAccess,
+  productionWriteActions,
+} from "../../../domain/rbac/production-write-auth"
+import {
   createD1ProductionActionRepository,
   type ProductionAlertStatus,
   type ProductionD1Database,
 } from "../../../domain/production/actions"
 import { defaultCoreTenantId } from "../../../domain/core/api"
+import { readCurrentAccessContext } from "../../../lib/access"
 import { handleCoreApiRequest } from "../../../lib/core-api"
 
 export const Route = createFileRoute("/api/core/alerts")({
@@ -17,6 +22,23 @@ export const Route = createFileRoute("/api/core/alerts")({
       GET: ({ request }) => handleCoreApiRequest("alerts", request),
       POST: async ({ request }) => {
         const traceId = createTraceId("alert")
+        const body = await request.json()
+        const parsed = parseAlertActionBody(body)
+
+        if (!parsed.ok) {
+          return json({ traceId, errors: parsed.errors }, { status: 400 })
+        }
+
+        const access = checkProductionWriteAccess({
+          context: await readCurrentAccessContext(),
+          tenantId: parsed.value.tenantId,
+          action: productionWriteActions.ALERT_STATUS_UPDATE,
+        })
+
+        if (!access.allowed) {
+          return json({ traceId, errors: access.errors }, { status: access.status })
+        }
+
         const db = (env as { HEOS_DB?: ProductionD1Database }).HEOS_DB
 
         if (!db) {
@@ -34,19 +56,12 @@ export const Route = createFileRoute("/api/core/alerts")({
           )
         }
 
-        const body = await request.json()
-        const parsed = parseAlertActionBody(body)
-
-        if (!parsed.ok) {
-          return json({ traceId, errors: parsed.errors }, { status: 400 })
-        }
-
         const result = await createD1ProductionActionRepository(db).transitionAlert(
           {
             tenantId: parsed.value.tenantId,
             alertId: parsed.value.alertId,
             nextStatus: parsed.value.nextStatus,
-            userId: parsed.value.userId,
+            userId: access.userId,
             now: new Date().toISOString(),
             traceId,
             note: parsed.value.note,

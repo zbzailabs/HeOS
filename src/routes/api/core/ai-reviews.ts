@@ -8,6 +8,7 @@ import {
 } from "../../../domain/ai/review-api"
 import type { AiReviewD1Database } from "../../../domain/ai/review-d1-repository"
 import { createTraceId } from "../../../domain/telemetry/api"
+import { readCurrentAccessContext } from "../../../lib/access"
 
 export const Route = createFileRoute("/api/core/ai-reviews")({
   server: {
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/api/core/ai-reviews")({
         const result = await handleAiReviewPost({
           body: await request.json(),
           db: (env as { HEOS_DB?: AiReviewD1Database }).HEOS_DB,
+          accessContext: await readCurrentAccessContext(),
           traceId,
           now: new Date().toISOString(),
         })

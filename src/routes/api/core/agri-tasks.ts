@@ -10,7 +10,12 @@ import {
   type ProductionD1Database,
 } from "../../../domain/production/actions"
 import { createTraceId } from "../../../domain/telemetry/api"
+import {
+  checkProductionWriteAccess,
+  productionWriteActions,
+} from "../../../domain/rbac/production-write-auth"
 import { handleCoreApiRequest } from "../../../lib/core-api"
+import { readCurrentAccessContext } from "../../../lib/access"
 
 export const Route = createFileRoute("/api/core/agri-tasks")({
   server: {
@@ -18,6 +23,23 @@ export const Route = createFileRoute("/api/core/agri-tasks")({
       GET: ({ request }) => handleCoreApiRequest("agriTasks", request),
       POST: async ({ request }) => {
         const traceId = createTraceId("agri")
+        const body = await request.json()
+        const parsed = parseAgriTaskActionBody(body)
+
+        if (!parsed.ok) {
+          return json({ traceId, errors: parsed.errors }, { status: 400 })
+        }
+
+        const access = checkProductionWriteAccess({
+          context: await readCurrentAccessContext(),
+          tenantId: parsed.value.tenantId,
+          action: productionWriteActions.AGRI_TASK_STATUS_UPDATE,
+        })
+
+        if (!access.allowed) {
+          return json({ traceId, errors: access.errors }, { status: access.status })
+        }
+
         const db = (env as { HEOS_DB?: ProductionD1Database }).HEOS_DB
 
         if (!db) {
@@ -35,20 +57,13 @@ export const Route = createFileRoute("/api/core/agri-tasks")({
           )
         }
 
-        const body = await request.json()
-        const parsed = parseAgriTaskActionBody(body)
-
-        if (!parsed.ok) {
-          return json({ traceId, errors: parsed.errors }, { status: 400 })
-        }
-
         const result =
           await createD1ProductionActionRepository(db).transitionAgriTask({
             tenantId: parsed.value.tenantId,
             taskId: parsed.value.taskId,
             cropCycleId: parsed.value.cropCycleId,
             nextStatus: parsed.value.nextStatus,
-            userId: parsed.value.userId,
+            userId: access.userId,
             now: new Date().toISOString(),
             traceId,
             notes: parsed.value.notes,

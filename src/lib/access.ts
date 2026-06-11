@@ -25,7 +25,7 @@ function parsePermissionInput(input: CheckPermissionInput) {
   }
 }
 
-async function readCurrentAccessContext() {
+export async function readCurrentAccessContext() {
   return resolveAccessContext(await getCurrentUser())
 }
 
@@ -56,4 +56,3 @@ export const checkCurrentPermission = createServerFn({
       data.permissionCode,
     ])
   })
-

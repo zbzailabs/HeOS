@@ -1,4 +1,9 @@
 import { defaultCoreTenantId } from "../core/api"
+import type { AccessContext } from "../rbac/access-policy"
+import {
+  checkProductionWriteAccess,
+  productionWriteActions,
+} from "../rbac/production-write-auth"
 import {
   createD1AiReviewRepository,
   type AiReviewD1Database,
@@ -30,24 +35,10 @@ export type AiReviewPostResult = {
 export async function handleAiReviewPost(input: {
   body: unknown
   db?: AiReviewD1Database
+  accessContext: AccessContext | null
   traceId: string
   now: string
 }): Promise<AiReviewPostResult> {
-  if (!input.db) {
-    return {
-      status: 503,
-      body: {
-        traceId: input.traceId,
-        errors: [
-          {
-            code: "HEOS_DB_NOT_CONFIGURED",
-            message: "HEOS_DB binding is required for AI review writes.",
-          },
-        ],
-      },
-    }
-  }
-
   if (!isRecord(input.body)) {
     return {
       status: 400,
@@ -63,11 +54,43 @@ export async function handleAiReviewPost(input: {
     }
   }
 
+  const tenantId = readString(input.body.tenantId) ?? defaultCoreTenantId
+  const access = checkProductionWriteAccess({
+    context: input.accessContext,
+    tenantId,
+    action: productionWriteActions.AI_REVIEW,
+  })
+
+  if (!access.allowed) {
+    return {
+      status: access.status,
+      body: {
+        traceId: input.traceId,
+        errors: access.errors,
+      },
+    }
+  }
+
+  if (!input.db) {
+    return {
+      status: 503,
+      body: {
+        traceId: input.traceId,
+        errors: [
+          {
+            code: "HEOS_DB_NOT_CONFIGURED",
+            message: "HEOS_DB binding is required for AI review writes.",
+          },
+        ],
+      },
+    }
+  }
+
   const writeResult = await createD1AiReviewRepository(input.db)
     .createReviewAction({
       traceId: input.traceId,
-      tenantId: readString(input.body.tenantId) ?? defaultCoreTenantId,
-      userId: readString(input.body.userId) ?? "user-tenglong-admin",
+      tenantId,
+      userId: access.userId,
       interactionId: readString(input.body.interactionId) ?? "",
       action: readString(input.body.action) ?? "",
       note: readString(input.body.note) ?? "",
