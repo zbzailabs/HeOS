@@ -179,6 +179,18 @@ const aiSourcePolicy = {
   sourceRequired: true,
 }
 
+const aiReviewActions = [
+  { action: "confirm", label: "确认" },
+  { action: "reject", label: "拒绝" },
+] as const
+
+const aiReviewEmptyState = "当前没有待人工确认的 AI 建议。"
+
+const aiAssistantOperations = {
+  currentModelName: "deepseek-v4-flash",
+  latestFailureCode: null as string | null,
+}
+
 export function getConsoleDataWorkbench() {
   const categorySummaries = Object.values(standardDictionaryCategories).map(
     (category) => {
@@ -301,7 +313,19 @@ export function getConsoleDataWorkbench() {
     },
     aiAssistant: {
       ...aiAssistant,
-      reviewQueue: aiReviewQueue,
+      reviewQueue: {
+        ...aiReviewQueue,
+        emptyState: aiReviewEmptyState,
+        items: aiReviewQueue.items.map((item) => ({
+          ...item,
+          reviewActions: aiReviewActions,
+        })),
+      },
+      operations: {
+        ...aiAssistantOperations,
+        totalInteractions: aiAssistant.total,
+        pendingReviewCount: aiReviewQueue.total,
+      },
       sourcePolicy: aiSourcePolicy,
     },
     dictionary: {

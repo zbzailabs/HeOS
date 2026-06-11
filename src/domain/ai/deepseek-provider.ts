@@ -1,4 +1,8 @@
 import type { AiScenario } from "./interaction"
+import type { AiProviderMetric } from "./observability"
+import { validateDeepSeekDraft } from "./deepseek-safety"
+
+type DeepSeekProviderMetric = Omit<AiProviderMetric, "createdAt">
 
 export type DeepSeekDraftProviderInput = {
   scenario: AiScenario | string
@@ -13,15 +17,17 @@ export type DeepSeekDraftProviderResult =
         modelName: string
         outputSummary: string
         costCents: number
+        providerMetric: DeepSeekProviderMetric
       }
     }
   | {
       ok: false
-      status: 503
+      status: 400 | 503
       errors: {
         code: string
         message: string
       }[]
+      providerMetric?: DeepSeekProviderMetric
     }
 
 export type DeepSeekDraftProviderOptions = {
@@ -29,6 +35,7 @@ export type DeepSeekDraftProviderOptions = {
   baseUrl?: string
   model?: string
   fetch?: typeof fetch
+  now?: () => number
 }
 
 const defaultDeepSeekBaseUrl = "https://api.deepseek.com"
@@ -56,6 +63,8 @@ export function createDeepSeekDraftProvider(
 
       const model = options.model ?? defaultDeepSeekModel
       const fetchImpl = options.fetch ?? fetch
+      const now = options.now ?? Date.now
+      const startedAt = now()
       const response = await fetchImpl(
         `${options.baseUrl ?? defaultDeepSeekBaseUrl}/chat/completions`,
         {
@@ -87,6 +96,7 @@ export function createDeepSeekDraftProvider(
           }),
         },
       )
+      const latencyMs = Math.max(0, Math.round(now() - startedAt))
 
       if (!response.ok) {
         return {
@@ -98,13 +108,28 @@ export function createDeepSeekDraftProvider(
               message: `DeepSeek request failed with status ${response.status}.`,
             },
           ],
+          providerMetric: {
+            provider: "deepseek",
+            modelName: model,
+            status: "failure",
+            statusCode: response.status,
+            latencyMs,
+            totalTokens: 0,
+            failureCode: "DEEPSEEK_REQUEST_FAILED",
+          },
         }
       }
 
       const body = (await response.json()) as {
         choices?: { message?: { content?: string | null } }[]
+        usage?: { total_tokens?: number | null }
       }
       const content = body.choices?.[0]?.message?.content?.trim()
+      const totalTokens =
+        typeof body.usage?.total_tokens === "number" &&
+        Number.isFinite(body.usage.total_tokens)
+          ? Math.max(0, Math.round(body.usage.total_tokens))
+          : 0
 
       if (!content) {
         return {
@@ -116,6 +141,32 @@ export function createDeepSeekDraftProvider(
               message: "DeepSeek returned an empty draft response.",
             },
           ],
+          providerMetric: {
+            provider: "deepseek",
+            modelName: model,
+            status: "failure",
+            statusCode: response.status,
+            latencyMs,
+            totalTokens,
+            failureCode: "DEEPSEEK_EMPTY_RESPONSE",
+          },
+        }
+      }
+      const safety = validateDeepSeekDraft(content)
+      if (!safety.ok) {
+        return {
+          ok: false,
+          status: 400,
+          errors: safety.errors,
+          providerMetric: {
+            provider: "deepseek",
+            modelName: model,
+            status: "failure",
+            statusCode: response.status,
+            latencyMs,
+            totalTokens,
+            failureCode: safety.errors[0]?.code ?? "AI_OUTPUT_REJECTED",
+          },
         }
       }
 
@@ -123,8 +174,17 @@ export function createDeepSeekDraftProvider(
         ok: true,
         value: {
           modelName: model,
-          outputSummary: content,
+          outputSummary: safety.value,
           costCents: 0,
+          providerMetric: {
+            provider: "deepseek",
+            modelName: model,
+            status: "success",
+            statusCode: response.status,
+            latencyMs,
+            totalTokens,
+            failureCode: null,
+          },
         },
       }
     },

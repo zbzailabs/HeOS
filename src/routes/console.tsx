@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useState } from 'react'
 import {
   Activity,
   AlertTriangle,
@@ -582,8 +583,24 @@ function AiAssistantPanel({
 }: {
   aiAssistant: ReturnType<typeof getConsoleDataWorkbench>['aiAssistant']
 }) {
+  const [reviewQueueItems, setReviewQueueItems] = useState(
+    aiAssistant.reviewQueue.items,
+  )
+  const [reviewing, setReviewing] = useState<{
+    id: string
+    action: 'confirm' | 'reject'
+  } | null>(null)
+  const [reviewError, setReviewError] = useState<string | null>(null)
+
   const handleReview = async (interactionId: string, action: 'confirm' | 'reject') => {
-    await fetch('/api/core/ai-reviews', {
+    if (reviewing) {
+      return
+    }
+
+    setReviewing({ id: interactionId, action })
+    setReviewError(null)
+
+    const response = await fetch('/api/core/ai-reviews', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -596,7 +613,18 @@ function AiAssistantPanel({
             : '后台工作台人工拒绝。',
       }),
     })
-    window.location.reload()
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => null)
+      setReviewError(readReviewErrorMessage(body) ?? `人工确认请求失败：${response.status}`)
+      setReviewing(null)
+      return
+    }
+
+    setReviewQueueItems((items) =>
+      items.filter((item) => item.id !== interactionId),
+    )
+    setReviewing(null)
   }
 
   return (
@@ -604,7 +632,7 @@ function AiAssistantPanel({
       id="ai-assistant"
       icon={<Bot size={19} />}
       title="AI 辅助记录"
-      badge={`${aiAssistant.reviewQueue.items.length} 待确认`}
+      badge={`${reviewQueueItems.length} 待确认`}
     >
       <div className="grid gap-2 md:grid-cols-2">
         <div className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3 md:col-span-2">
@@ -617,18 +645,42 @@ function AiAssistantPanel({
           </p>
         </div>
 
+        <div className="grid gap-2 md:col-span-2 sm:grid-cols-4">
+          <MiniStat
+            label="模型"
+            value={aiAssistant.operations.currentModelName}
+          />
+          <MiniStat
+            label="AI 记录"
+            value={String(aiAssistant.operations.totalInteractions)}
+          />
+          <MiniStat
+            label="待确认"
+            value={String(reviewQueueItems.length)}
+          />
+          <MiniStat
+            label="最近失败"
+            value={aiAssistant.operations.latestFailureCode ?? 'none'}
+          />
+        </div>
+
         <div className="rounded-lg border border-[#f0d7a8] bg-[#fffaf0] px-3 py-3 md:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="m-0 text-sm font-extrabold text-[#765211]">
               待人工确认
             </p>
             <span className="rounded-lg bg-white px-2 py-1 text-xs font-extrabold text-[#765211]">
-              {aiAssistant.reviewQueue.items.length}/{aiAssistant.reviewQueue.total}
+              {reviewQueueItems.length}/{aiAssistant.reviewQueue.total}
             </span>
           </div>
+          {reviewError ? (
+            <p className="m-0 mt-3 rounded-lg border border-[#f0c4bd] bg-white px-3 py-2 text-xs font-bold leading-5 text-[#9d3a2f]">
+              {reviewError}
+            </p>
+          ) : null}
           <div className="mt-3 grid gap-2">
-            {aiAssistant.reviewQueue.items.length > 0 ? (
-              aiAssistant.reviewQueue.items.map((item) => (
+            {reviewQueueItems.length > 0 ? (
+              reviewQueueItems.map((item) => (
                 <div
                   key={item.id}
                   className="rounded-lg border border-[#efd7a4] bg-white px-3 py-3"
@@ -645,27 +697,37 @@ function AiAssistantPanel({
                         {item.outputSummary}
                       </p>
                     </div>
-                    <div className="flex shrink-0 gap-2">
-                      <button
-                        type="button"
-                        className="rounded-lg border border-[#b7d8c8] bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]"
-                        onClick={() => void handleReview(item.id, 'confirm')}
-                      >
-                        确认
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-lg border border-[#f0c4bd] bg-[#fff1ef] px-3 py-2 text-xs font-extrabold text-[#9d3a2f]"
-                        onClick={() => void handleReview(item.id, 'reject')}
-                      >
-                        拒绝
-                      </button>
+                    <div className="flex shrink-0 flex-wrap gap-2">
+                      {item.reviewActions.map((reviewAction) => {
+                        const isCurrentAction =
+                          reviewing?.id === item.id &&
+                          reviewing.action === reviewAction.action
+                        const isDisabled = Boolean(reviewing)
+                        const buttonClass =
+                          reviewAction.action === 'confirm'
+                            ? 'rounded-lg border border-[#b7d8c8] bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359] disabled:cursor-not-allowed disabled:opacity-60'
+                            : 'rounded-lg border border-[#f0c4bd] bg-[#fff1ef] px-3 py-2 text-xs font-extrabold text-[#9d3a2f] disabled:cursor-not-allowed disabled:opacity-60'
+
+                        return (
+                          <button
+                            key={reviewAction.action}
+                            type="button"
+                            className={buttonClass}
+                            disabled={isDisabled}
+                            onClick={() =>
+                              void handleReview(item.id, reviewAction.action)
+                            }
+                          >
+                            {isCurrentAction ? '处理中' : reviewAction.label}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <EmptyState text="当前没有待人工确认的 AI 建议。" />
+              <EmptyState text={aiAssistant.reviewQueue.emptyState} />
             )}
           </div>
         </div>
@@ -686,6 +748,22 @@ function AiAssistantPanel({
       <PaginationBar total={aiAssistant.total} nextCursor={aiAssistant.nextCursor} />
     </BusinessPanel>
   )
+}
+
+function readReviewErrorMessage(body: unknown) {
+  if (!body || typeof body !== 'object' || !('errors' in body)) {
+    return null
+  }
+  const errors = (body as { errors?: unknown }).errors
+  if (!Array.isArray(errors)) {
+    return null
+  }
+  const firstError = errors[0]
+  if (!firstError || typeof firstError !== 'object') {
+    return null
+  }
+  const message = (firstError as { message?: unknown }).message
+  return typeof message === 'string' && message.length > 0 ? message : null
 }
 
 function WorkflowStrip({

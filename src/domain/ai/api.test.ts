@@ -174,6 +174,45 @@ describe("AI interaction POST API boundary", () => {
     expect(db.statements).toHaveLength(0)
   })
 
+  it("returns 400 for unsafe DeepSeek draft output", async () => {
+    const db = createFakeAiD1()
+    const result = await handleAiInteractionPost({
+      body: {
+        mode: "draft",
+        tenantId: "tenant-tenglong-school",
+        userId: "user-tenglong-admin",
+        scenario: aiScenarios.ALERT_EXPLANATION,
+        source: {
+          tenantId: "tenant-tenglong-school",
+          table: "heos_alerts",
+          targetId: "alert-soil-ph-critical",
+          title: "soil_ph critical 告警",
+          permissionCode: "alert:read",
+        },
+        humanConfirmationRequired: true,
+      },
+      db,
+      deepSeekApiKey: "deepseek-test-key",
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: "自动执行灌溉并打开水泵。" } }],
+          }),
+        ),
+      traceId: "trace-ai-api-draft-004",
+      now: "2026-06-11T12:30:00.000Z",
+    })
+
+    expect(result).toMatchObject({
+      status: 400,
+      body: {
+        traceId: "trace-ai-api-draft-004",
+        errors: [{ code: "AI_OUTPUT_DEVICE_CONTROL_FORBIDDEN" }],
+      },
+    })
+    expect(db.statements).toHaveLength(0)
+  })
+
   it("rejects high-risk draft requests without human confirmation", async () => {
     const db = createFakeAiD1()
     const result = await handleAiInteractionPost({

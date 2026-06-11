@@ -114,3 +114,7 @@ curl -sS https://app.yunhe.ai/api/core/ai-reviews \
 ```
 
 该结果表示安全边界生效，不视为代码失败；配置 Secret 后重新执行生产 API 核验。
+
+## 8. 后续复测记录
+
+2026-06-11 已在生产环境完成 DeepSeek Secret 配置后的真实调用、人工确认、D1 写入和审计记录复测。复测证据见 [S4-05 DeepSeek 生产密钥配置与真实调用复测](./S4-05-deepseek-production-verification.md)。

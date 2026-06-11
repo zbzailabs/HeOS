@@ -101,8 +101,21 @@ describe("console data workbench", () => {
       expect.objectContaining({
         id: "ai-alert-explanation",
         sourceTitle: "离线规则演示设备",
+        reviewActions: [
+          { action: "confirm", label: "确认" },
+          { action: "reject", label: "拒绝" },
+        ],
       }),
     ])
+    expect(workbench.aiAssistant.reviewQueue.emptyState).toBe(
+      "当前没有待人工确认的 AI 建议。",
+    )
+    expect(workbench.aiAssistant.operations).toEqual({
+      currentModelName: "deepseek-v4-flash",
+      totalInteractions: workbench.aiAssistant.total,
+      pendingReviewCount: workbench.aiAssistant.reviewQueue.total,
+      latestFailureCode: null,
+    })
     expect(workbench.cropModels.items).toContainEqual(
       expect.objectContaining({ cropName: "番茄", activeStage: "苗期" }),
     )
