@@ -70,6 +70,7 @@ describe("audit log standard fields", () => {
       "device.control.request",
       "policy.change",
       "provider.sync",
+      "ai.interaction.create",
     ])
   })
 

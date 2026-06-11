@@ -9,6 +9,7 @@ export const auditEventTypes = {
   DEVICE_CONTROL_REQUEST: "device.control.request",
   POLICY_CHANGE: "policy.change",
   PROVIDER_SYNC: "provider.sync",
+  AI_INTERACTION_CREATE: "ai.interaction.create",
 } as const
 
 export type AuditEventType =
@@ -21,6 +22,7 @@ export const auditActions = {
   DEVICE_CONTROL_REQUEST: "device.control.request",
   POLICY_CHANGE: "policy.change",
   PROVIDER_SYNC: "provider.sync",
+  AI_INTERACTION_CREATE: "ai.interaction.create",
 } as const
 
 export type AuditAction = (typeof auditActions)[keyof typeof auditActions]
