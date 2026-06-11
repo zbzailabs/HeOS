@@ -80,7 +80,7 @@ function safeEqual(left: string, right: string) {
   return diff === 0
 }
 
-async function createSessionToken(payload: SessionPayload) {
+export async function createSessionToken(payload: SessionPayload) {
   const body = base64UrlEncode(JSON.stringify(payload))
   const signature = await hmacSha256Hex(getRequiredEnv('HEOS_SESSION_SECRET'), body)
   return `${body}.${signature}`
@@ -136,6 +136,23 @@ export const getCurrentUser = createServerFn({
 }).handler(async () => {
   return readSessionToken(getCookie(SESSION_COOKIE))
 })
+
+export function getSessionCookieFromRequest(request: Request) {
+  const cookieHeader = request.headers.get('cookie')
+  if (!cookieHeader) {
+    return undefined
+  }
+
+  return cookieHeader
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${SESSION_COOKIE}=`))
+    ?.slice(SESSION_COOKIE.length + 1)
+}
+
+export async function getCurrentUserFromRequest(request: Request) {
+  return readSessionToken(getSessionCookieFromRequest(request))
+}
 
 export const signIn = createServerFn({
   method: 'POST',

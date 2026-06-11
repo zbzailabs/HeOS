@@ -41,9 +41,9 @@ type RenkeSyncSuccessInput = {
 export const Route = createFileRoute("/api/providers/renke/sync")({
   server: {
     handlers: {
-      POST: async () =>
+      POST: async ({ request }) =>
         handleRenkeSyncPost({
-          accessContext: await readCurrentAccessContext(),
+          accessContext: await readCurrentAccessContext(request),
         }),
     },
   },

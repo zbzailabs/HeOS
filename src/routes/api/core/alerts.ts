@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/core/alerts")({
         }
 
         const access = checkProductionWriteAccess({
-          context: await readCurrentAccessContext(),
+          context: await readCurrentAccessContext(request),
           tenantId: parsed.value.tenantId,
           action: productionWriteActions.ALERT_STATUS_UPDATE,
         })

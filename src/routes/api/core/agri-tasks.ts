@@ -31,7 +31,7 @@ export const Route = createFileRoute("/api/core/agri-tasks")({
         }
 
         const access = checkProductionWriteAccess({
-          context: await readCurrentAccessContext(),
+          context: await readCurrentAccessContext(request),
           tenantId: parsed.value.tenantId,
           action: productionWriteActions.AGRI_TASK_STATUS_UPDATE,
         })

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/core/ai-reviews")({
         const result = await handleAiReviewPost({
           body: await request.json(),
           db: (env as { HEOS_DB?: AiReviewD1Database }).HEOS_DB,
-          accessContext: await readCurrentAccessContext(),
+          accessContext: await readCurrentAccessContext(request),
           traceId,
           now: new Date().toISOString(),
         })

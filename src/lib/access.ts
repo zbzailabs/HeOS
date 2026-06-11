@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import { getCurrentUser } from "./auth"
+import { getCurrentUser, getCurrentUserFromRequest } from "./auth"
 import { permissionCodes, type PermissionCode } from "../domain/rbac/access-control"
 import {
   checkEveryPermission,
@@ -25,8 +25,12 @@ function parsePermissionInput(input: CheckPermissionInput) {
   }
 }
 
-export async function readCurrentAccessContext() {
-  return resolveAccessContext(await getCurrentUser())
+export async function readCurrentAccessContext(request?: Request) {
+  const user = request
+    ? await getCurrentUserFromRequest(request)
+    : await getCurrentUser()
+
+  return resolveAccessContext(user)
 }
 
 export const getCurrentAccessContext = createServerFn({
