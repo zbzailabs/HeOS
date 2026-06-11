@@ -148,6 +148,8 @@ export function parseTelemetryHistoryQuery(
 
   const limitParam = params.get("limit")
   const limit = limitParam ? Number(limitParam) : undefined
+  const cursorObservedAt = params.get("cursorObservedAt")
+  const cursorId = params.get("cursorId")
 
   if (
     limit !== undefined &&
@@ -177,6 +179,13 @@ export function parseTelemetryHistoryQuery(
       toTs,
       order: params.get("order") === "asc" ? "asc" : "desc",
       limit,
+      cursor:
+        cursorObservedAt && cursorId
+          ? {
+              observedAt: cursorObservedAt,
+              id: cursorId,
+            }
+          : undefined,
     },
   }
 }

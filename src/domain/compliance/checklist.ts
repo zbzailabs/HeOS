@@ -96,9 +96,15 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     issue: "#10",
     status: complianceStatuses.COVERED,
     blocker: false,
-    evidence: ["src/domain/telemetry/api.ts", "src/routes/api/telemetry/history.ts"],
+    evidence: [
+      "docs/specs/S4-12-telemetry-history-d1-api.md",
+      "src/domain/telemetry/api.ts",
+      "src/domain/telemetry/d1-query.ts",
+      "src/domain/telemetry/d1-query.test.ts",
+      "src/routes/api/telemetry/history.ts",
+    ],
     gap: null,
-    plan: "生产环境切换为 D1 查询实现。",
+    plan: "继续核验 D1 历史查询、时间窗口、稳定分页和 demo 降级行为。",
   },
   {
     id: "S3-01",

@@ -61,6 +61,23 @@ describe("compliance checklist", () => {
     )
   })
 
+  it("includes telemetry history D1 evidence in the release checklist", () => {
+    const checklist = getComplianceChecklist("2026-06-11T23:00:00.000Z")
+    const telemetryItem = checklist.items.find(
+      (checklistItem) => checklistItem.id === "S2-02",
+    )
+
+    expect(telemetryItem?.evidence).toEqual(
+      expect.arrayContaining([
+        "docs/specs/S4-12-telemetry-history-d1-api.md",
+        "src/domain/telemetry/d1-query.ts",
+        "src/routes/api/telemetry/history.ts",
+      ]),
+    )
+    expect(telemetryItem?.plan).toContain("D1 历史查询")
+    expect(telemetryItem?.plan).not.toContain("生产环境切换为 D1 查询实现")
+  })
+
   it("includes core D1 query and production action evidence in the release checklist", () => {
     const checklist = getComplianceChecklist("2026-06-11T22:45:00.000Z")
     const item = checklist.items.find((checklistItem) => checklistItem.id === "S4-11")
