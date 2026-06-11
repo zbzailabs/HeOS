@@ -41,6 +41,7 @@ export const heosD1Migrations = [
   "0006_heos_audit_standard_fields.sql",
   "0007_heos_rainfall_metric_and_tenglong_field_state.sql",
   "0008_heos_ai_review_actions.sql",
+  "0009_heos_ai_provider_metrics.sql",
 ] as const
 
 const categoryLabels = {

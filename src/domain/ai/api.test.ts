@@ -139,7 +139,13 @@ describe("AI interaction POST API boundary", () => {
         },
       },
     })
-    expect(db.statements).toHaveLength(2)
+    expect(db.statements).toHaveLength(3)
+    expect(db.statements[2]?.sql).toContain(
+      "INSERT INTO heos_ai_provider_metrics",
+    )
+    expect(db.statements[2]?.values).toContain(
+      "ai-interaction|trace-ai-api-draft-001|alert_explanation|2026-06-11T12%3A30%3A00.000Z",
+    )
   })
 
   it("returns 503 for draft generation when the DeepSeek key is missing", async () => {
@@ -210,7 +216,13 @@ describe("AI interaction POST API boundary", () => {
         errors: [{ code: "AI_OUTPUT_DEVICE_CONTROL_FORBIDDEN" }],
       },
     })
-    expect(db.statements).toHaveLength(0)
+    expect(db.statements).toHaveLength(1)
+    expect(db.statements[0]?.sql).toContain(
+      "INSERT INTO heos_ai_provider_metrics",
+    )
+    expect(db.statements[0]?.values).toContain(
+      "AI_OUTPUT_DEVICE_CONTROL_FORBIDDEN",
+    )
   })
 
   it("rejects high-risk draft requests without human confirmation", async () => {

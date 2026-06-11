@@ -19,6 +19,7 @@ import {
   type AiD1Database,
   type AiD1WriteSummary,
 } from "./d1-repository"
+import { createD1AiProviderMetricRepository } from "./metrics-d1-repository"
 
 export type AiInteractionPostBody =
   | {
@@ -94,6 +95,19 @@ export async function handleAiInteractionPost(input: {
       sourceSummary: JSON.stringify(source ?? {}),
     })
     if (!draftResult.ok) {
+      if (draftResult.providerMetric) {
+        await createD1AiProviderMetricRepository(input.db).createMetric({
+          traceId: input.traceId,
+          tenantId: parsed.value.interactionInput.tenantId,
+          userId: parsed.value.interactionInput.userId,
+          interactionId: null,
+          metric: {
+            ...draftResult.providerMetric,
+            createdAt: input.now,
+          },
+        })
+      }
+
       return {
         status: draftResult.status,
         body: {
@@ -130,6 +144,17 @@ export async function handleAiInteractionPost(input: {
         },
       }
     }
+
+    await createD1AiProviderMetricRepository(input.db).createMetric({
+      traceId: input.traceId,
+      tenantId: generated.value.interactionInput.tenantId,
+      userId: generated.value.interactionInput.userId,
+      interactionId: writeResult.value.interactionId,
+      metric: {
+        ...draftResult.value.providerMetric,
+        createdAt: input.now,
+      },
+    })
 
     return {
       status: 200,
