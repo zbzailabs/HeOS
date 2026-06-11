@@ -57,6 +57,26 @@ function createFakeD1(): CoreD1Database {
                 }
               }
 
+              if (sql.includes("FROM heos_ai_interactions")) {
+                expect(sql).toContain("human_confirmation_required = 1")
+                expect(sql).toContain("heos_ai_review_actions")
+                return {
+                  results: [
+                    {
+                      id: "ai-pending",
+                      tenant_id: tenantId,
+                      scenario: "alert_explanation",
+                      model_name: "deepseek-v4-flash",
+                      output_summary: "请复核土壤 pH 告警。",
+                      retrieval_sources_json: JSON.stringify([
+                        { title: "soil_ph critical 告警" },
+                      ]),
+                      created_at: "2026-06-11T08:00:00.000Z",
+                    },
+                  ],
+                }
+              }
+
               return { results: [] }
             },
           }
@@ -96,5 +116,25 @@ describe("D1 core query repository", () => {
     })
 
     expect(traces.items.map((trace) => trace.visibility)).toEqual(["public"])
+  })
+
+  it("lists AI review queue through tenant-scoped SQL", async () => {
+    const repository = createD1CoreQueryRepository(createFakeD1())
+    const queue = await repository.listAiReviewQueue({
+      tenantId: "tenant-tenglong-school",
+      limit: 20,
+    })
+
+    expect(queue.items).toEqual([
+      {
+        id: "ai-pending",
+        tenantId: "tenant-tenglong-school",
+        scenario: "alert_explanation",
+        modelName: "deepseek-v4-flash",
+        sourceTitle: "soil_ph critical 告警",
+        outputSummary: "请复核土壤 pH 告警。",
+        createdAt: "2026-06-11T08:00:00.000Z",
+      },
+    ])
   })
 })

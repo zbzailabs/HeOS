@@ -39,6 +39,8 @@ export const heosD1Migrations = [
   "0004_heos_prd_core_domains.sql",
   "0005_heos_alert_rules.sql",
   "0006_heos_audit_standard_fields.sql",
+  "0007_heos_rainfall_metric_and_tenglong_field_state.sql",
+  "0008_heos_ai_review_actions.sql",
 ] as const
 
 const categoryLabels = {
@@ -270,6 +272,14 @@ export function getConsoleDataWorkbench() {
       "console_ai_assistant",
     ),
   )
+  const aiReviewQueue = assertCoreResult(
+    coreHandlers.aiReviewQueue(
+      new URLSearchParams({
+        tenantId: defaultCoreTenantId,
+      }),
+      "console_ai_review_queue",
+    ),
+  )
 
   return {
     businessPages,
@@ -291,6 +301,7 @@ export function getConsoleDataWorkbench() {
     },
     aiAssistant: {
       ...aiAssistant,
+      reviewQueue: aiReviewQueue,
       sourcePolicy: aiSourcePolicy,
     },
     dictionary: {

@@ -21,6 +21,11 @@ export type AiAuthorizedDraftInput = {
   scenario: AiScenario
   source: AiRetrievalSource | null
   humanConfirmationRequired: boolean
+  generatedDraft?: {
+    modelName: string
+    outputSummary: string
+    costCents: number
+  }
   now: string
 }
 
@@ -34,16 +39,17 @@ export function createAiAuthorizedDraftInput(
 ): AiInteractionResult<AiAuthorizedDraftPlan> {
   const retrievalSources = input.source ? [input.source] : []
   const draft = createDraft(input.scenario, input.source)
+  const recommendation = input.generatedDraft?.outputSummary ?? draft.recommendation
   const interactionInput: AiInteractionWritePlanInput = {
     traceId: input.traceId,
     tenantId: input.tenantId,
     userId: input.userId,
     scenario: input.scenario,
-    modelName: "heos-draft-orchestrator",
+    modelName: input.generatedDraft?.modelName ?? "heos-draft-orchestrator",
     inputSummary: `基于授权来源生成 ${scenarioLabel(input.scenario)} 草稿：${draft.sourceTitle}`,
-    outputSummary: `${draft.recommendation} 仅作为人工复核草稿，确认后进入业务处理。`,
+    outputSummary: `${recommendation} 仅作为人工复核草稿，确认后进入业务处理。`,
     retrievalSources,
-    costCents: 0,
+    costCents: input.generatedDraft?.costCents ?? 0,
     humanConfirmationRequired: input.humanConfirmationRequired,
     createdAt: input.now,
   }
@@ -57,7 +63,10 @@ export function createAiAuthorizedDraftInput(
     ok: true,
     status: 200,
     value: {
-      draft,
+      draft: {
+        ...draft,
+        recommendation,
+      },
       interactionInput,
     },
   }

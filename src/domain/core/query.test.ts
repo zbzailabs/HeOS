@@ -6,6 +6,7 @@ import {
   getCoreDashboard,
   getCoreProjectDetail,
   listCoreAgriTasks,
+  listCoreAiReviewQueue,
   listCoreAiInteractions,
   listCoreAlerts,
   listCoreDevices,
@@ -137,6 +138,30 @@ const seed: CoreQuerySeed = {
       modelName: "gpt-4.1-mini",
       createdAt: "2026-06-10T08:00:00.000Z",
       costCents: 3,
+      humanConfirmationRequired: true,
+      outputSummary: "请复核设备离线告警。",
+      sourceTitle: "离线规则演示设备告警",
+    },
+    {
+      id: "ai-2",
+      tenantId: "tenant-a",
+      scenario: "crop_qa",
+      modelName: "deepseek-v4-flash",
+      createdAt: "2026-06-10T08:05:00.000Z",
+      costCents: 1,
+      humanConfirmationRequired: false,
+      outputSummary: "低风险问答。",
+      sourceTitle: "番茄作物模型",
+    },
+  ],
+  aiReviewActions: [
+    {
+      id: "review-1",
+      tenantId: "tenant-a",
+      interactionId: "ai-reviewed",
+      action: "confirm",
+      statusAfterAction: "confirmed",
+      createdAt: "2026-06-10T08:10:00.000Z",
     },
   ],
 }
@@ -200,7 +225,7 @@ describe("core query repository", () => {
       openAlertCount: 1,
       pendingAgriTaskCount: 1,
       traceArchiveCount: 1,
-      aiInteractionCount: 1,
+      aiInteractionCount: 2,
     })
   })
 
@@ -221,6 +246,43 @@ describe("core query repository", () => {
     expect(listCoreAlerts(repository, query).items).toHaveLength(1)
     expect(listCoreAgriTasks(repository, query).items).toHaveLength(1)
     expect(listCoreTraceArchives(repository, query).items).toHaveLength(1)
-    expect(listCoreAiInteractions(repository, query).items).toHaveLength(1)
+    expect(listCoreAiInteractions(repository, query).items).toHaveLength(2)
+  })
+
+  it("lists only high-risk AI interactions waiting for human review", () => {
+    const repository = createCoreQueryRepository({
+      ...seed,
+      aiInteractions: [
+        ...seed.aiInteractions,
+        {
+          id: "ai-reviewed",
+          tenantId: "tenant-a",
+          scenario: "agri_advice",
+          modelName: "deepseek-v4-flash",
+          createdAt: "2026-06-10T08:20:00.000Z",
+          costCents: 2,
+          humanConfirmationRequired: true,
+          outputSummary: "请安排现场巡检。",
+          sourceTitle: "番茄苗期巡检",
+        },
+      ],
+    })
+
+    const queue = listCoreAiReviewQueue(repository, {
+      tenantId: "tenant-a",
+      limit: 20,
+    })
+
+    expect(queue.items).toEqual([
+      {
+        id: "ai-1",
+        tenantId: "tenant-a",
+        scenario: "alert_explanation",
+        modelName: "gpt-4.1-mini",
+        sourceTitle: "离线规则演示设备告警",
+        outputSummary: "请复核设备离线告警。",
+        createdAt: "2026-06-10T08:00:00.000Z",
+      },
+    ])
   })
 })

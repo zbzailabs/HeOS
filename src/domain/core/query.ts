@@ -114,6 +114,28 @@ export type CoreAiInteraction = {
   modelName: string
   createdAt: string
   costCents: number
+  humanConfirmationRequired: boolean
+  outputSummary: string
+  sourceTitle: string
+}
+
+export type CoreAiReviewAction = {
+  id: string
+  tenantId: string
+  interactionId: string
+  action: string
+  statusAfterAction: string
+  createdAt: string
+}
+
+export type CoreAiReviewQueueItem = {
+  id: string
+  tenantId: string
+  scenario: string
+  modelName: string
+  sourceTitle: string
+  outputSummary: string
+  createdAt: string
 }
 
 export type CoreQuerySeed = {
@@ -126,6 +148,7 @@ export type CoreQuerySeed = {
   agriTasks: CoreAgriTask[]
   traceArchives: CoreTraceArchive[]
   aiInteractions: CoreAiInteraction[]
+  aiReviewActions: CoreAiReviewAction[]
 }
 
 export type CoreQueryRepository = ReturnType<typeof createCoreQueryRepository>
@@ -144,6 +167,7 @@ export function createCoreQueryRepository(seed: CoreQuerySeed) {
     agriTasks: [...seed.agriTasks],
     traceArchives: [...seed.traceArchives],
     aiInteractions: [...seed.aiInteractions],
+    aiReviewActions: [...seed.aiReviewActions],
   }
 }
 
@@ -297,6 +321,34 @@ export function listCoreAiInteractions(
   query: CoreListQuery,
 ) {
   return pageItems(tenantItems(repository.aiInteractions, query.tenantId), query)
+}
+
+export function listCoreAiReviewQueue(
+  repository: CoreQueryRepository,
+  query: CoreListQuery,
+) {
+  const reviewedInteractionIds = new Set(
+    tenantItems(repository.aiReviewActions, query.tenantId).map(
+      (review) => review.interactionId,
+    ),
+  )
+  const items: CoreAiReviewQueueItem[] = tenantItems(
+    repository.aiInteractions,
+    query.tenantId,
+  )
+    .filter((interaction) => interaction.humanConfirmationRequired)
+    .filter((interaction) => !reviewedInteractionIds.has(interaction.id))
+    .map((interaction) => ({
+      id: interaction.id,
+      tenantId: interaction.tenantId,
+      scenario: interaction.scenario,
+      modelName: interaction.modelName,
+      sourceTitle: interaction.sourceTitle,
+      outputSummary: interaction.outputSummary,
+      createdAt: interaction.createdAt,
+    }))
+
+  return pageItems(items, query)
 }
 
 function tenantItems<T extends { tenantId: string }>(

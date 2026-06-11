@@ -6,6 +6,7 @@ import {
   getCoreDashboard,
   getCoreProjectDetail,
   listCoreAgriTasks,
+  listCoreAiReviewQueue,
   listCoreAiInteractions,
   listCoreAlerts,
   listCoreDevices,
@@ -119,8 +120,12 @@ export const defaultCoreQuerySeed: CoreQuerySeed = {
       modelName: "gpt-4.1-mini",
       createdAt: "2026-06-10T08:00:00.000Z",
       costCents: 3,
+      humanConfirmationRequired: true,
+      outputSummary: "建议先检查供应商在线状态和现场供电。",
+      sourceTitle: "离线规则演示设备",
     },
   ],
+  aiReviewActions: [],
 }
 
 export function createCoreApiHandlers(seed: CoreQuerySeed = defaultCoreQuerySeed) {
@@ -156,6 +161,10 @@ export function createCoreApiHandlers(seed: CoreQuerySeed = defaultCoreQuerySeed
     aiInteractions: (params: URLSearchParams, traceId = createTraceId("core")) =>
       listHandler(params, traceId, (query) =>
         listCoreAiInteractions(repository, query),
+      ),
+    aiReviewQueue: (params: URLSearchParams, traceId = createTraceId("core")) =>
+      listHandler(params, traceId, (query) =>
+        listCoreAiReviewQueue(repository, query),
       ),
   }
 }
@@ -205,6 +214,13 @@ export function createD1CoreApiHandlers(db: CoreD1Database) {
     ) =>
       listHandlerAsync(params, traceId, (query) =>
         repository.listAiInteractions(query),
+      ),
+    aiReviewQueue: async (
+      params: URLSearchParams,
+      traceId = createTraceId("core"),
+    ) =>
+      listHandlerAsync(params, traceId, (query) =>
+        repository.listAiReviewQueue(query),
       ),
   }
 }

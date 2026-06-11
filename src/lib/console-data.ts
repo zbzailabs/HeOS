@@ -29,6 +29,7 @@ export const getCurrentConsoleDataWorkbench = createServerFn({
     agriTasks,
     traceArchives,
     aiAssistant,
+    aiReviewQueue,
     latestTelemetry,
   } = d1Results
 
@@ -38,7 +39,8 @@ export const getCurrentConsoleDataWorkbench = createServerFn({
     !alertCenter.ok ||
     !agriTasks.ok ||
     !traceArchives.ok ||
-    !aiAssistant.ok
+    !aiAssistant.ok ||
+    !aiReviewQueue.ok
   ) {
     return base
   }
@@ -64,6 +66,7 @@ export const getCurrentConsoleDataWorkbench = createServerFn({
     },
     aiAssistant: {
       ...aiAssistant.value,
+      reviewQueue: aiReviewQueue.value,
       sourcePolicy: base.aiAssistant.sourcePolicy,
     },
     telemetry: {
@@ -89,6 +92,7 @@ async function readConsoleD1Results(
       agriTasks,
       traceArchives,
       aiAssistant,
+      aiReviewQueue,
       latestTelemetry,
     ] = await Promise.all([
       handlers.projectDetail(
@@ -132,6 +136,12 @@ async function readConsoleD1Results(
         }),
         "console_ai_assistant_d1",
       ),
+      handlers.aiReviewQueue(
+        new URLSearchParams({
+          tenantId: "tenant-tenglong-school",
+        }),
+        "console_ai_review_queue_d1",
+      ),
       listLatestTelemetryRows(db),
     ])
 
@@ -142,6 +152,7 @@ async function readConsoleD1Results(
       agriTasks,
       traceArchives,
       aiAssistant,
+      aiReviewQueue,
       latestTelemetry,
     }
   } catch {

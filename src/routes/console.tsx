@@ -582,12 +582,29 @@ function AiAssistantPanel({
 }: {
   aiAssistant: ReturnType<typeof getConsoleDataWorkbench>['aiAssistant']
 }) {
+  const handleReview = async (interactionId: string, action: 'confirm' | 'reject') => {
+    await fetch('/api/core/ai-reviews', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        tenantId: 'tenant-tenglong-school',
+        interactionId,
+        action,
+        note:
+          action === 'confirm'
+            ? '后台工作台人工确认。'
+            : '后台工作台人工拒绝。',
+      }),
+    })
+    window.location.reload()
+  }
+
   return (
     <BusinessPanel
       id="ai-assistant"
       icon={<Bot size={19} />}
       title="AI 辅助记录"
-      badge={`${aiAssistant.items.length}/${aiAssistant.total}`}
+      badge={`${aiAssistant.reviewQueue.items.length} 待确认`}
     >
       <div className="grid gap-2 md:grid-cols-2">
         <div className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3 md:col-span-2">
@@ -599,6 +616,60 @@ function AiAssistantPanel({
             来源记录：{aiAssistant.sourcePolicy.sourceRequired ? '必填' : '未启用'}
           </p>
         </div>
+
+        <div className="rounded-lg border border-[#f0d7a8] bg-[#fffaf0] px-3 py-3 md:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="m-0 text-sm font-extrabold text-[#765211]">
+              待人工确认
+            </p>
+            <span className="rounded-lg bg-white px-2 py-1 text-xs font-extrabold text-[#765211]">
+              {aiAssistant.reviewQueue.items.length}/{aiAssistant.reviewQueue.total}
+            </span>
+          </div>
+          <div className="mt-3 grid gap-2">
+            {aiAssistant.reviewQueue.items.length > 0 ? (
+              aiAssistant.reviewQueue.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-lg border border-[#efd7a4] bg-white px-3 py-3"
+                >
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <p className="m-0 break-words text-sm font-extrabold text-[#12383c]">
+                        {item.sourceTitle}
+                      </p>
+                      <p className="m-0 mt-1 break-words text-xs font-semibold leading-5 text-[#6c817b]">
+                        {item.scenario} / {item.modelName} / {item.createdAt}
+                      </p>
+                      <p className="m-0 mt-2 break-words text-sm font-semibold leading-6 text-[#345c58]">
+                        {item.outputSummary}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <button
+                        type="button"
+                        className="rounded-lg border border-[#b7d8c8] bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359]"
+                        onClick={() => void handleReview(item.id, 'confirm')}
+                      >
+                        确认
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-[#f0c4bd] bg-[#fff1ef] px-3 py-2 text-xs font-extrabold text-[#9d3a2f]"
+                        onClick={() => void handleReview(item.id, 'reject')}
+                      >
+                        拒绝
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <EmptyState text="当前没有待人工确认的 AI 建议。" />
+            )}
+          </div>
+        </div>
+
         {aiAssistant.items.length > 0 ? (
           aiAssistant.items.map((interaction) => (
             <ListRow

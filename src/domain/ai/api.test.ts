@@ -110,6 +110,14 @@ describe("AI interaction POST API boundary", () => {
         humanConfirmationRequired: true,
       },
       db,
+      deepSeekApiKey: "deepseek-test-key",
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: "请复核土壤 pH 告警。" } }],
+            usage: { total_tokens: 16 },
+          }),
+        ),
       traceId: "trace-ai-api-draft-001",
       now: "2026-06-11T12:30:00.000Z",
     })
@@ -125,12 +133,45 @@ describe("AI interaction POST API boundary", () => {
             "audit|trace-ai-api-draft-001|ai.interaction.create|2026-06-11T12%3A30%3A00.000Z",
           draft: {
             sourceTitle: "soil_ph critical 告警",
+            recommendation: "请复核土壤 pH 告警。",
             confirmationNotice: "高风险建议已进入人工确认。",
           },
         },
       },
     })
     expect(db.statements).toHaveLength(2)
+  })
+
+  it("returns 503 for draft generation when the DeepSeek key is missing", async () => {
+    const db = createFakeAiD1()
+    const result = await handleAiInteractionPost({
+      body: {
+        mode: "draft",
+        tenantId: "tenant-tenglong-school",
+        userId: "user-tenglong-admin",
+        scenario: aiScenarios.ALERT_EXPLANATION,
+        source: {
+          tenantId: "tenant-tenglong-school",
+          table: "heos_alerts",
+          targetId: "alert-soil-ph-critical",
+          title: "soil_ph critical 告警",
+          permissionCode: "alert:read",
+        },
+        humanConfirmationRequired: true,
+      },
+      db,
+      traceId: "trace-ai-api-draft-003",
+      now: "2026-06-11T12:30:00.000Z",
+    })
+
+    expect(result).toMatchObject({
+      status: 503,
+      body: {
+        traceId: "trace-ai-api-draft-003",
+        errors: [{ code: "DEEPSEEK_API_KEY_MISSING" }],
+      },
+    })
+    expect(db.statements).toHaveLength(0)
   })
 
   it("rejects high-risk draft requests without human confirmation", async () => {

@@ -23,6 +23,7 @@ import { Route as ApiCoreProjectRouteImport } from './routes/api/core/project'
 import { Route as ApiCoreDevicesRouteImport } from './routes/api/core/devices'
 import { Route as ApiCoreDashboardRouteImport } from './routes/api/core/dashboard'
 import { Route as ApiCoreAlertsRouteImport } from './routes/api/core/alerts'
+import { Route as ApiCoreAiReviewsRouteImport } from './routes/api/core/ai-reviews'
 import { Route as ApiCoreAiInteractionsRouteImport } from './routes/api/core/ai-interactions'
 import { Route as ApiCoreAgriTasksRouteImport } from './routes/api/core/agri-tasks'
 import { Route as ApiComplianceChecklistRouteImport } from './routes/api/compliance/checklist'
@@ -99,6 +100,11 @@ const ApiCoreAlertsRoute = ApiCoreAlertsRouteImport.update({
   path: '/api/core/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCoreAiReviewsRoute = ApiCoreAiReviewsRouteImport.update({
+  id: '/api/core/ai-reviews',
+  path: '/api/core/ai-reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCoreAiInteractionsRoute = ApiCoreAiInteractionsRouteImport.update({
   id: '/api/core/ai-interactions',
   path: '/api/core/ai-interactions',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
+  '/api/core/ai-reviews': typeof ApiCoreAiReviewsRoute
   '/api/core/alerts': typeof ApiCoreAlertsRoute
   '/api/core/dashboard': typeof ApiCoreDashboardRoute
   '/api/core/devices': typeof ApiCoreDevicesRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
+  '/api/core/ai-reviews': typeof ApiCoreAiReviewsRoute
   '/api/core/alerts': typeof ApiCoreAlertsRoute
   '/api/core/dashboard': typeof ApiCoreDashboardRoute
   '/api/core/devices': typeof ApiCoreDevicesRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/api/compliance/checklist': typeof ApiComplianceChecklistRoute
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
+  '/api/core/ai-reviews': typeof ApiCoreAiReviewsRoute
   '/api/core/alerts': typeof ApiCoreAlertsRoute
   '/api/core/dashboard': typeof ApiCoreDashboardRoute
   '/api/core/devices': typeof ApiCoreDevicesRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/api/compliance/checklist'
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
+    | '/api/core/ai-reviews'
     | '/api/core/alerts'
     | '/api/core/dashboard'
     | '/api/core/devices'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/api/compliance/checklist'
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
+    | '/api/core/ai-reviews'
     | '/api/core/alerts'
     | '/api/core/dashboard'
     | '/api/core/devices'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/api/compliance/checklist'
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
+    | '/api/core/ai-reviews'
     | '/api/core/alerts'
     | '/api/core/dashboard'
     | '/api/core/devices'
@@ -266,6 +278,7 @@ export interface RootRouteChildren {
   ApiComplianceChecklistRoute: typeof ApiComplianceChecklistRoute
   ApiCoreAgriTasksRoute: typeof ApiCoreAgriTasksRoute
   ApiCoreAiInteractionsRoute: typeof ApiCoreAiInteractionsRoute
+  ApiCoreAiReviewsRoute: typeof ApiCoreAiReviewsRoute
   ApiCoreAlertsRoute: typeof ApiCoreAlertsRoute
   ApiCoreDashboardRoute: typeof ApiCoreDashboardRoute
   ApiCoreDevicesRoute: typeof ApiCoreDevicesRoute
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCoreAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/core/ai-reviews': {
+      id: '/api/core/ai-reviews'
+      path: '/api/core/ai-reviews'
+      fullPath: '/api/core/ai-reviews'
+      preLoaderRoute: typeof ApiCoreAiReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/core/ai-interactions': {
       id: '/api/core/ai-interactions'
       path: '/api/core/ai-interactions'
@@ -426,6 +446,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiComplianceChecklistRoute: ApiComplianceChecklistRoute,
   ApiCoreAgriTasksRoute: ApiCoreAgriTasksRoute,
   ApiCoreAiInteractionsRoute: ApiCoreAiInteractionsRoute,
+  ApiCoreAiReviewsRoute: ApiCoreAiReviewsRoute,
   ApiCoreAlertsRoute: ApiCoreAlertsRoute,
   ApiCoreDashboardRoute: ApiCoreDashboardRoute,
   ApiCoreDevicesRoute: ApiCoreDevicesRoute,

@@ -1,4 +1,5 @@
 import { defaultCoreTenantId } from "../core/api"
+import { createDeepSeekDraftProvider } from "./deepseek-provider"
 import {
   createAiAuthorizedDraftInput,
   type AiAuthorizedDraft,
@@ -43,6 +44,10 @@ export type AiInteractionPostResult = {
 export async function handleAiInteractionPost(input: {
   body: unknown
   db?: AiD1Database
+  deepSeekApiKey?: string
+  deepSeekBaseUrl?: string
+  deepSeekModel?: string
+  fetch?: typeof fetch
   traceId: string
   now: string
 }): Promise<AiInteractionPostResult> {
@@ -77,8 +82,45 @@ export async function handleAiInteractionPost(input: {
       }
     }
 
+    const source = parsed.value.interactionInput.retrievalSources[0]
+    const draftResult = await createDeepSeekDraftProvider({
+      apiKey: input.deepSeekApiKey,
+      baseUrl: input.deepSeekBaseUrl,
+      model: input.deepSeekModel,
+      fetch: input.fetch,
+    }).generateDraft({
+      scenario: parsed.value.interactionInput.scenario,
+      sourceTitle: parsed.value.draft.sourceTitle,
+      sourceSummary: JSON.stringify(source ?? {}),
+    })
+    if (!draftResult.ok) {
+      return {
+        status: draftResult.status,
+        body: {
+          traceId: input.traceId,
+          errors: draftResult.errors,
+        },
+      }
+    }
+
+    const generated = createAiAuthorizedDraftInput({
+      ...parsed.value.interactionInput,
+      source: source ?? null,
+      now: parsed.value.interactionInput.createdAt,
+      generatedDraft: draftResult.value,
+    })
+    if (!generated.ok) {
+      return {
+        status: 400,
+        body: {
+          traceId: input.traceId,
+          errors: generated.errors,
+        },
+      }
+    }
+
     const writeResult = await createD1AiInteractionRepository(input.db)
-      .createInteraction(parsed.value.interactionInput)
+      .createInteraction(generated.value.interactionInput)
     if (!writeResult.ok) {
       return {
         status: 400,
@@ -95,7 +137,7 @@ export async function handleAiInteractionPost(input: {
         traceId: input.traceId,
         data: {
           ...writeResult.value,
-          draft: parsed.value.draft,
+          draft: generated.value.draft,
         },
       },
     }

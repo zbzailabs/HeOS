@@ -19,6 +19,11 @@ export const Route = createFileRoute("/api/core/ai-interactions")({
         const result = await handleAiInteractionPost({
           body: await request.json(),
           db: (env as { HEOS_DB?: AiD1Database }).HEOS_DB,
+          deepSeekApiKey: (env as { DEEPSEEK_API_KEY?: string })
+            .DEEPSEEK_API_KEY,
+          deepSeekBaseUrl: (env as { DEEPSEEK_BASE_URL?: string })
+            .DEEPSEEK_BASE_URL,
+          deepSeekModel: (env as { DEEPSEEK_MODEL?: string }).DEEPSEEK_MODEL,
           traceId,
           now: new Date().toISOString(),
         })

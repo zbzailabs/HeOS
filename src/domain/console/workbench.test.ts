@@ -97,6 +97,12 @@ describe("console data workbench", () => {
       ),
     ).toBe(true)
     expect(workbench.aiAssistant.items).toHaveLength(1)
+    expect(workbench.aiAssistant.reviewQueue.items).toEqual([
+      expect.objectContaining({
+        id: "ai-alert-explanation",
+        sourceTitle: "离线规则演示设备",
+      }),
+    ])
     expect(workbench.cropModels.items).toContainEqual(
       expect.objectContaining({ cropName: "番茄", activeStage: "苗期" }),
     )

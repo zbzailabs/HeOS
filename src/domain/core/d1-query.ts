@@ -1,6 +1,7 @@
 import type {
   CoreAgriTask,
   CoreAiInteraction,
+  CoreAiReviewQueueItem,
   CoreAlert,
   CoreDevice,
   CoreListQuery,
@@ -141,6 +142,10 @@ export function createD1CoreQueryRepository(db: CoreD1Database) {
     async listAiInteractions(query: CoreListQuery) {
       return pageRows(await listAllAiInteractions(db, query.tenantId), query)
     },
+
+    async listAiReviewQueue(query: CoreListQuery) {
+      return pageRows(await listAllAiReviewQueue(db, query.tenantId), query)
+    },
   }
 }
 
@@ -195,13 +200,40 @@ async function listAllTraceArchives(db: CoreD1Database, tenantId: string) {
 async function listAllAiInteractions(db: CoreD1Database, tenantId: string) {
   const rows = await queryRows<AiInteractionRow>(
     db,
-    `SELECT id, tenant_id, scenario, model_name, created_at, cost_cents
+    `SELECT id, tenant_id, scenario, model_name, created_at, cost_cents,
+            output_summary, retrieval_sources_json, human_confirmation_required
      FROM heos_ai_interactions
      WHERE tenant_id = ?
      ORDER BY id`,
     [tenantId],
   )
   return rows.map(mapAiInteraction)
+}
+
+async function listAllAiReviewQueue(
+  db: CoreD1Database,
+  tenantId: string,
+): Promise<CoreAiReviewQueueItem[]> {
+  const rows = await queryRows<AiReviewQueueRow>(
+    db,
+    `SELECT ai.id,
+            ai.tenant_id,
+            ai.scenario,
+            ai.model_name,
+            ai.output_summary,
+            ai.retrieval_sources_json,
+            ai.created_at
+     FROM heos_ai_interactions ai
+     LEFT JOIN heos_ai_review_actions review
+       ON review.tenant_id = ai.tenant_id
+      AND review.interaction_id = ai.id
+     WHERE ai.tenant_id = ?
+       AND ai.human_confirmation_required = 1
+       AND review.id IS NULL
+     ORDER BY ai.created_at DESC, ai.id`,
+    [tenantId],
+  )
+  return rows.map(mapAiReviewQueueItem)
 }
 
 async function listAllPlots(db: CoreD1Database, tenantId: string) {
@@ -357,6 +389,19 @@ type AiInteractionRow = {
   model_name: string
   created_at: string
   cost_cents: number
+  output_summary?: string
+  retrieval_sources_json?: string
+  human_confirmation_required?: number
+}
+
+type AiReviewQueueRow = {
+  id: string
+  tenant_id: string
+  scenario: string
+  model_name: string
+  output_summary: string
+  retrieval_sources_json: string
+  created_at: string
 }
 
 function mapProject(row: ProjectRow): CoreProject {
@@ -452,5 +497,34 @@ function mapAiInteraction(row: AiInteractionRow): CoreAiInteraction {
     modelName: row.model_name,
     createdAt: row.created_at,
     costCents: row.cost_cents,
+    humanConfirmationRequired: row.human_confirmation_required === 1,
+    outputSummary: row.output_summary ?? "",
+    sourceTitle: readFirstSourceTitle(row.retrieval_sources_json),
+  }
+}
+
+function mapAiReviewQueueItem(row: AiReviewQueueRow): CoreAiReviewQueueItem {
+  return {
+    id: row.id,
+    tenantId: row.tenant_id,
+    scenario: row.scenario,
+    modelName: row.model_name,
+    sourceTitle: readFirstSourceTitle(row.retrieval_sources_json),
+    outputSummary: row.output_summary,
+    createdAt: row.created_at,
+  }
+}
+
+function readFirstSourceTitle(value: string | undefined) {
+  if (!value) {
+    return "授权来源"
+  }
+
+  try {
+    const sources = JSON.parse(value) as { title?: unknown }[]
+    const title = sources[0]?.title
+    return typeof title === "string" && title.length > 0 ? title : "授权来源"
+  } catch {
+    return "授权来源"
   }
 }
