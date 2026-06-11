@@ -1,11 +1,11 @@
 # HeOS 发布冻结合规报告
 
-版本日期：2026-06-10
+版本日期：2026-06-11
 
 ## 1. 汇总
 
-- 检查项：14
-- 已覆盖：14
+- 检查项：16
+- 已覆盖：16
 - 进行中：0
 - 未达标：0
 - 阻断项：0
@@ -127,6 +127,22 @@
 - 证据：`docs/specs/S4-13-telemetry-d1-trace-id.md`、`src/domain/telemetry/d1-api.ts`、`src/domain/telemetry/d1-api.test.ts`、`src/routes/api/telemetry/latest.ts`、`src/routes/api/telemetry/history.ts`
 - 验收重点：遥测 latest/history 的 D1 成功响应沿用请求 traceId。
 
+### S4-14 生产写入 API 服务端鉴权
+
+- Issue：#70
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S4-14-production-write-api-auth.md`、`src/domain/rbac/production-write-auth.ts`、`src/lib/auth.test.ts`、`src/routes/api/core/alerts.ts`、`src/routes/api/core/agri-tasks.ts`、`src/routes/api/core/ai-reviews.ts`、`src/routes/api/providers/renke/sync.ts`
+- 验收重点：未登录写入返回 401，缺少权限返回 403，写入身份来自请求 session。
+
+### S4-15 一期验收收口、生产健康检查与 R2 导出边界
+
+- Issue：#71
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S4-15-phase-one-readiness-health-export.md`、`src/domain/operations/health.ts`、`src/domain/trace/export-plan.ts`、`src/routes/api/operations/health.ts`、`DESIGN.md`、`docs/heos-prd/02-技术架构.md`
+- 验收重点：生产健康检查可持续复核，追溯导出具备 R2 object key 与 `trace.export` 审计边界。
+
 ## 4. 当前结论
 
-截至本报告版本，下一阶段无已识别发布阻断项。D1 migration、D1 seed、Queues、Workers 部署和线上关键路径核验结果进入 #41 交付记录。
+截至本报告版本，一期收口无已识别发布阻断项。D1、Renke Cron/Queues、生产写入鉴权、健康检查、遥测 traceId、追溯公开页和 R2 导出边界均具备可复核证据；真实 R2 文件上传和报表文件生成进入后续交付。

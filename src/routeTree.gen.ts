@@ -18,6 +18,7 @@ import { Route as DemoPrismaRouteImport } from './routes/demo/prisma'
 import { Route as DemoNeonRouteImport } from './routes/demo/neon'
 import { Route as ApiTelemetryLatestRouteImport } from './routes/api/telemetry/latest'
 import { Route as ApiTelemetryHistoryRouteImport } from './routes/api/telemetry/history'
+import { Route as ApiOperationsHealthRouteImport } from './routes/api/operations/health'
 import { Route as ApiCoreTraceArchivesRouteImport } from './routes/api/core/trace-archives'
 import { Route as ApiCoreProjectRouteImport } from './routes/api/core/project'
 import { Route as ApiCoreDevicesRouteImport } from './routes/api/core/devices'
@@ -73,6 +74,11 @@ const ApiTelemetryLatestRoute = ApiTelemetryLatestRouteImport.update({
 const ApiTelemetryHistoryRoute = ApiTelemetryHistoryRouteImport.update({
   id: '/api/telemetry/history',
   path: '/api/telemetry/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOperationsHealthRoute = ApiOperationsHealthRouteImport.update({
+  id: '/api/operations/health',
+  path: '/api/operations/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCoreTraceArchivesRoute = ApiCoreTraceArchivesRouteImport.update({
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/api/core/devices': typeof ApiCoreDevicesRoute
   '/api/core/project': typeof ApiCoreProjectRoute
   '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
+  '/api/operations/health': typeof ApiOperationsHealthRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
   '/api/providers/renke/replay': typeof ApiProvidersRenkeReplayRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByTo {
   '/api/core/devices': typeof ApiCoreDevicesRoute
   '/api/core/project': typeof ApiCoreProjectRoute
   '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
+  '/api/operations/health': typeof ApiOperationsHealthRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
   '/api/providers/renke/replay': typeof ApiProvidersRenkeReplayRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/api/core/devices': typeof ApiCoreDevicesRoute
   '/api/core/project': typeof ApiCoreProjectRoute
   '/api/core/trace-archives': typeof ApiCoreTraceArchivesRoute
+  '/api/operations/health': typeof ApiOperationsHealthRoute
   '/api/telemetry/history': typeof ApiTelemetryHistoryRoute
   '/api/telemetry/latest': typeof ApiTelemetryLatestRoute
   '/api/providers/renke/replay': typeof ApiProvidersRenkeReplayRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/api/core/devices'
     | '/api/core/project'
     | '/api/core/trace-archives'
+    | '/api/operations/health'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
     | '/api/providers/renke/replay'
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/api/core/devices'
     | '/api/core/project'
     | '/api/core/trace-archives'
+    | '/api/operations/health'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
     | '/api/providers/renke/replay'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/api/core/devices'
     | '/api/core/project'
     | '/api/core/trace-archives'
+    | '/api/operations/health'
     | '/api/telemetry/history'
     | '/api/telemetry/latest'
     | '/api/providers/renke/replay'
@@ -284,6 +296,7 @@ export interface RootRouteChildren {
   ApiCoreDevicesRoute: typeof ApiCoreDevicesRoute
   ApiCoreProjectRoute: typeof ApiCoreProjectRoute
   ApiCoreTraceArchivesRoute: typeof ApiCoreTraceArchivesRoute
+  ApiOperationsHealthRoute: typeof ApiOperationsHealthRoute
   ApiTelemetryHistoryRoute: typeof ApiTelemetryHistoryRoute
   ApiTelemetryLatestRoute: typeof ApiTelemetryLatestRoute
   ApiProvidersRenkeReplayRoute: typeof ApiProvidersRenkeReplayRoute
@@ -353,6 +366,13 @@ declare module '@tanstack/react-router' {
       path: '/api/telemetry/history'
       fullPath: '/api/telemetry/history'
       preLoaderRoute: typeof ApiTelemetryHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/operations/health': {
+      id: '/api/operations/health'
+      path: '/api/operations/health'
+      fullPath: '/api/operations/health'
+      preLoaderRoute: typeof ApiOperationsHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/core/trace-archives': {
@@ -452,6 +472,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCoreDevicesRoute: ApiCoreDevicesRoute,
   ApiCoreProjectRoute: ApiCoreProjectRoute,
   ApiCoreTraceArchivesRoute: ApiCoreTraceArchivesRoute,
+  ApiOperationsHealthRoute: ApiOperationsHealthRoute,
   ApiTelemetryHistoryRoute: ApiTelemetryHistoryRoute,
   ApiTelemetryLatestRoute: ApiTelemetryLatestRoute,
   ApiProvidersRenkeReplayRoute: ApiProvidersRenkeReplayRoute,

@@ -2,7 +2,7 @@
 
 ## 项目定位
 
-HeOS 是基于 TanStack Start 初始化的 Web 应用项目，当前阶段目标是完成代码仓库初始化、依赖锁定、基础构建验证和后续开发规范固化。
+HeOS 是基于 TanStack Start 与 Cloudflare Workers 的作物种植综合服务与智能化管理平台。一期当前重点是围绕腾龙小学智慧农场完成真实 Renke 接入、D1 业务数据、后台工作台、告警农事追溯闭环、AI 人工确认和生产健康检查。
 
 ## 技术栈
 
@@ -19,7 +19,7 @@ HeOS 是基于 TanStack Start 初始化的 Web 应用项目，当前阶段目标
 - Vitest
 - pnpm
 
-当前仓库仍保留 Prisma 与 Neon serverless Postgres 的初始化示例。HeOS 一期新功能优先采用 TanStack + Cloudflare 生态：应用运行在 Cloudflare Workers，关系型业务数据优先使用 D1，对象资料进入 R2，配置和低频缓存进入 KV，供应商同步和异步任务使用 Queues 与 Cron Triggers。外部 PostgreSQL 只作为 D1 无法满足容量、查询或兼容性要求时的例外方案。
+当前仓库仍保留 Prisma 与 Neon serverless Postgres 的初始化示例。HeOS 一期功能采用 TanStack + Cloudflare 生态：应用运行在 Cloudflare Workers，关系型业务数据优先使用 D1，对象资料和导出文件进入 R2，配置和低频缓存进入 KV，供应商同步和异步任务使用 Queues 与 Cron Triggers。外部 PostgreSQL 只作为 D1 无法满足容量、查询或兼容性要求时的例外方案。
 
 ## 工程约定
 
@@ -29,12 +29,11 @@ HeOS 是基于 TanStack Start 初始化的 Web 应用项目，当前阶段目标
 - 新功能开发采用 Spec-Driven Development：先明确规格、验收标准和边界，再编写代码。
 - 修改代码前读取 `AGENTS.md` 和 `DESIGN.md`，保持项目约束一致。
 
-## 初始化范围
+## 当前一期能力
 
-本次初始化包含：
-
-- 修正 Git 远端到 `git@github.com:zbzailabs/HeOS.git`。
-- 补齐 `AGENTS.md` 和 `DESIGN.md`。
-- 生成 pnpm lockfile。
-- 排除本地环境文件。
-- 验证安装、测试和构建流程。
+- `/console` 是生产后台入口，`/` 重定向到后台。
+- Cloudflare D1 承载租户、项目、设备、遥测、告警、农事、追溯、AI 记录和审计数据。
+- Renke 设备 `40406816` 已接入 Cron Triggers、Queues、D1 latest/history 和同步记录。
+- 生产写入 API 已完成请求级 session、权限码和租户范围校验。
+- `/api/operations/health` 提供持续性生产健康检查。
+- 追溯导出已具备 R2 object key 和 `trace.export` 审计边界；真实文件生成和上传进入后续任务。

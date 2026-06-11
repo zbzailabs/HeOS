@@ -232,6 +232,43 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     gap: null,
     plan: "继续核验遥测 latest/history 的 D1 成功响应 traceId 贯通。",
   },
+  {
+    id: "S4-14",
+    title: "生产写入 API 服务端鉴权",
+    specRef: "验收 3、验收 6 与生产写入 API",
+    issue: "#70",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S4-14-production-write-api-auth.md",
+      "src/domain/rbac/production-write-auth.ts",
+      "src/lib/auth.test.ts",
+      "src/routes/api/core/alerts.ts",
+      "src/routes/api/core/agri-tasks.ts",
+      "src/routes/api/core/ai-reviews.ts",
+      "src/routes/api/providers/renke/sync.ts",
+    ],
+    gap: null,
+    plan: "生产写入 API 持续使用请求级 session、权限码和租户范围校验。",
+  },
+  {
+    id: "S4-15",
+    title: "一期验收收口、生产健康检查与 R2 导出边界",
+    specRef: "一期验收 7、验收 8 与追溯导出边界",
+    issue: "#71",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S4-15-phase-one-readiness-health-export.md",
+      "src/domain/operations/health.ts",
+      "src/domain/trace/export-plan.ts",
+      "src/routes/api/operations/health.ts",
+      "docs/heos-prd/02-技术架构.md",
+      "DESIGN.md",
+    ],
+    gap: null,
+    plan: "后续在真实 R2 上传和报表生成任务中复用导出计划与 trace.export 审计动作。",
+  },
 ]
 
 export function getComplianceChecklist(

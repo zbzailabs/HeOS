@@ -34,6 +34,10 @@ describe("compliance checklist", () => {
     expect(report).toContain("src/domain/production/actions.ts")
     expect(report).toContain("### S4-13 遥测 D1 查询 traceId 贯通")
     expect(report).toContain("Issue：#69")
+    expect(report).toContain("### S4-14 生产写入 API 服务端鉴权")
+    expect(report).toContain("Issue：#70")
+    expect(report).toContain("### S4-15 一期验收收口、生产健康检查与 R2 导出边界")
+    expect(report).toContain("Issue：#71")
     expect(report).toContain("阻断项：0")
   })
 
@@ -141,5 +145,28 @@ describe("compliance checklist", () => {
       ]),
     )
     expect(item?.plan).toContain("traceId")
+  })
+
+  it("includes production write auth and phase-one health export evidence", () => {
+    const checklist = getComplianceChecklist("2026-06-11T23:30:00.000Z")
+
+    expect(checklist.items.find((item) => item.id === "S4-14")).toEqual(
+      expect.objectContaining({
+        title: "生产写入 API 服务端鉴权",
+        issue: "#70",
+        status: complianceStatuses.COVERED,
+        blocker: false,
+        gap: null,
+      }),
+    )
+    expect(checklist.items.find((item) => item.id === "S4-15")).toEqual(
+      expect.objectContaining({
+        title: "一期验收收口、生产健康检查与 R2 导出边界",
+        issue: "#71",
+        status: complianceStatuses.COVERED,
+        blocker: false,
+        gap: null,
+      }),
+    )
   })
 })
