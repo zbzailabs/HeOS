@@ -32,6 +32,8 @@ describe("compliance checklist", () => {
     expect(report).toContain("### S4-11 核心域 D1 与业务动作证据")
     expect(report).toContain("Issue：#67")
     expect(report).toContain("src/domain/production/actions.ts")
+    expect(report).toContain("### S4-13 遥测 D1 查询 traceId 贯通")
+    expect(report).toContain("Issue：#69")
     expect(report).toContain("阻断项：0")
   })
 
@@ -70,11 +72,14 @@ describe("compliance checklist", () => {
     expect(telemetryItem?.evidence).toEqual(
       expect.arrayContaining([
         "docs/specs/S4-12-telemetry-history-d1-api.md",
+        "docs/specs/S4-13-telemetry-d1-trace-id.md",
+        "src/domain/telemetry/d1-api.ts",
         "src/domain/telemetry/d1-query.ts",
         "src/routes/api/telemetry/history.ts",
       ]),
     )
     expect(telemetryItem?.plan).toContain("D1 历史查询")
+    expect(telemetryItem?.plan).toContain("traceId")
     expect(telemetryItem?.plan).not.toContain("生产环境切换为 D1 查询实现")
   })
 
@@ -111,5 +116,30 @@ describe("compliance checklist", () => {
 
     expect(coreItem?.plan).toContain("D1 查询证据")
     expect(alertItem?.plan).toContain("告警状态流转")
+  })
+
+  it("includes telemetry D1 traceId evidence in the release checklist", () => {
+    const checklist = getComplianceChecklist("2026-06-11T23:10:00.000Z")
+    const item = checklist.items.find(
+      (checklistItem) => checklistItem.id === "S4-13",
+    )
+
+    expect(item).toEqual(
+      expect.objectContaining({
+        title: "遥测 D1 查询 traceId 贯通",
+        issue: "#69",
+        status: complianceStatuses.COVERED,
+        blocker: false,
+        gap: null,
+      }),
+    )
+    expect(item?.evidence).toEqual(
+      expect.arrayContaining([
+        "docs/specs/S4-13-telemetry-d1-trace-id.md",
+        "src/domain/telemetry/d1-api.ts",
+        "src/domain/telemetry/d1-api.test.ts",
+      ]),
+    )
+    expect(item?.plan).toContain("traceId")
   })
 })

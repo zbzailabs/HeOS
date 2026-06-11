@@ -4,8 +4,8 @@
 
 ## 1. 汇总
 
-- 检查项：13
-- 已覆盖：13
+- 检查项：14
+- 已覆盖：14
 - 进行中：0
 - 未达标：0
 - 阻断项：0
@@ -19,7 +19,7 @@
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`docs/specs/S1-05-prd-core-domain-model.md`、`db/migrations/0004_heos_prd_core_domains.sql`、`src/domain/core/prd-model.ts`
-- 后续计划：通过 #37、#38 接入生产 D1 seed 与查询。
+- 后续计划：继续运行核验生产 D1 seed、核心查询 D1 repository 和控制台 D1 数据合并结果。
 
 ### S2-06 Renke D1 同步与失败重试
 
@@ -27,23 +27,23 @@
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`docs/specs/S2-06-renke-d1-sync-retry.md`、`src/domain/renke/sync.ts`、`src/routes/api/providers/renke/sync.ts`
-- 后续计划：通过 #39 接入 Cron Triggers、Queues 和同步重放。
+- 后续计划：继续运行核验 Cron Triggers、Queues、同步重放和失败处理证据。
 
 ### S2-02 遥测查询 API
 
 - Issue：#10
 - 状态：已覆盖
 - 阻断发布：否
-- 证据：`src/domain/telemetry/api.ts`、`src/routes/api/telemetry/latest.ts`、`src/routes/api/telemetry/history.ts`
-- 后续计划：生产环境继续使用 D1 查询实现。
+- 证据：`docs/specs/S4-12-telemetry-history-d1-api.md`、`docs/specs/S4-13-telemetry-d1-trace-id.md`、`src/domain/telemetry/api.ts`、`src/domain/telemetry/d1-api.ts`、`src/domain/telemetry/d1-query.ts`、`src/routes/api/telemetry/latest.ts`、`src/routes/api/telemetry/history.ts`
+- 后续计划：继续核验 D1 查询、时间窗口、稳定分页、traceId 贯通和 demo 降级行为。
 
 ### S3-01 在线状态与离线告警前端展示
 
 - Issue：#12
 - 状态：已覆盖
 - 阻断发布：否
-- 证据：`src/domain/alerts/offline.ts`、`src/routes/console.tsx`
-- 后续计划：通过 #40 接入告警确认、处理、关闭和恢复记录。
+- 证据：`src/domain/alerts/offline.ts`、`src/domain/production/actions.ts`、`src/routes/api/core/alerts.ts`、`src/routes/console.tsx`
+- 后续计划：继续核验告警状态流转、恢复记录和审计写入结果。
 
 ### S3-02 标准稽核页
 
@@ -51,7 +51,7 @@
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`src/domain/compliance/checklist.ts`、`src/routes/api/compliance/checklist.ts`、`src/routes/console.tsx`
-- 后续计划：通过 #41 将发布前快照进入交付记录。
+- 后续计划：发布前导出合规快照并写入交付记录。
 
 ### S4-01 发布冻结 compliance-report
 
@@ -59,7 +59,7 @@
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`docs/heos-prd/compliance-report.md`
-- 后续计划：阶段结束前刷新验证结果和部署记录。
+- 后续计划：发布前刷新验证结果、部署记录和 GitHub Issue 完成记录。
 
 ### S4-02 任务边界与验收命令固化
 
@@ -69,7 +69,7 @@
 - 证据：`docs/heos-prd/06-标准对齐任务清单-v0.1.md`、`docs/heos-prd/05-验收标准.md`
 - 后续计划：Issue、文档和验收记录保持互相引用。
 
-## 3. 下一阶段进行中检查明细
+## 3. 下一阶段检查明细
 
 ### S0-04 下一阶段规格与生产验收基线
 
@@ -118,6 +118,14 @@
 - 阻断发布：否
 - 证据：`docs/specs/S4-03-next-stage-release-verification.md`
 - 验收重点：线上关键路径、部署记录、GitHub Project 和飞书项目记录一致。
+
+### S4-13 遥测 D1 查询 traceId 贯通
+
+- Issue：#69
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S4-13-telemetry-d1-trace-id.md`、`src/domain/telemetry/d1-api.ts`、`src/domain/telemetry/d1-api.test.ts`、`src/routes/api/telemetry/latest.ts`、`src/routes/api/telemetry/history.ts`
+- 验收重点：遥测 latest/history 的 D1 成功响应沿用请求 traceId。
 
 ## 4. 当前结论
 

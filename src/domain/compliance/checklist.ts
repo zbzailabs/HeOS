@@ -98,13 +98,15 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     blocker: false,
     evidence: [
       "docs/specs/S4-12-telemetry-history-d1-api.md",
+      "docs/specs/S4-13-telemetry-d1-trace-id.md",
       "src/domain/telemetry/api.ts",
+      "src/domain/telemetry/d1-api.ts",
       "src/domain/telemetry/d1-query.ts",
       "src/domain/telemetry/d1-query.test.ts",
       "src/routes/api/telemetry/history.ts",
     ],
     gap: null,
-    plan: "继续核验 D1 历史查询、时间窗口、稳定分页和 demo 降级行为。",
+    plan: "继续核验 D1 历史查询、时间窗口、稳定分页、traceId 贯通和 demo 降级行为。",
   },
   {
     id: "S3-01",
@@ -212,6 +214,23 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     ],
     gap: null,
     plan: "发布冻结报告持续引用核心域 D1 查询、控制台 D1 合并、告警状态流转、农事记录、追溯归档和审计写入证据。",
+  },
+  {
+    id: "S4-13",
+    title: "遥测 D1 查询 traceId 贯通",
+    specRef: "验收 7 请求日志与 S2-02",
+    issue: "#69",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S4-13-telemetry-d1-trace-id.md",
+      "src/domain/telemetry/d1-api.ts",
+      "src/domain/telemetry/d1-api.test.ts",
+      "src/routes/api/telemetry/latest.ts",
+      "src/routes/api/telemetry/history.ts",
+    ],
+    gap: null,
+    plan: "继续核验遥测 latest/history 的 D1 成功响应 traceId 贯通。",
   },
 ]
 
