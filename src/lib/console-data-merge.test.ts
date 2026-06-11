@@ -25,13 +25,24 @@ describe("console D1 workbench merge", () => {
       aiAssistant: { ok: true, value: d1AiAssistant },
       aiReviewQueue: { ok: true, value: d1ReviewQueue },
       latestTelemetry: [],
+      aiProviderOperations: {
+        recentProviderCalls: 3,
+        recentProviderFailures: 1,
+        averageLatencyMs: 420,
+        totalTokens: 1800,
+        latestFailureCode: "DEEPSEEK_REQUEST_FAILED",
+      },
     })
 
     expect(merged.aiAssistant.operations).toEqual({
       currentModelName: "deepseek-v4-flash",
       totalInteractions: d1AiAssistant.total,
       pendingReviewCount: d1ReviewQueue.total,
-      latestFailureCode: null,
+      latestFailureCode: "DEEPSEEK_REQUEST_FAILED",
+      recentProviderCalls: 3,
+      recentProviderFailures: 1,
+      averageLatencyMs: 420,
+      totalTokens: 1800,
     })
     expect(merged.aiAssistant.reviewQueue.emptyState).toBe(
       "当前没有待人工确认的 AI 建议。",

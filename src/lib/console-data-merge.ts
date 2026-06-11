@@ -34,6 +34,14 @@ export type ConsoleD1WorkbenchData = {
     }
   >
   latestTelemetry: ConsoleDataWorkbench["telemetry"]["productionLatest"]
+  aiProviderOperations?: Pick<
+    ConsoleDataWorkbench["aiAssistant"]["operations"],
+    | "recentProviderCalls"
+    | "recentProviderFailures"
+    | "averageLatencyMs"
+    | "totalTokens"
+    | "latestFailureCode"
+  >
 }
 
 export function mergeConsoleD1WorkbenchData(
@@ -49,6 +57,7 @@ export function mergeConsoleD1WorkbenchData(
     aiAssistant,
     aiReviewQueue,
     latestTelemetry,
+    aiProviderOperations,
   } = d1Results
 
   if (
@@ -100,6 +109,7 @@ export function mergeConsoleD1WorkbenchData(
       },
       operations: {
         ...base.aiAssistant.operations,
+        ...aiProviderOperations,
         totalInteractions: aiAssistant.value.total,
         pendingReviewCount: aiReviewQueue.value.total,
       },

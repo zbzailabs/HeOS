@@ -115,6 +115,10 @@ describe("console data workbench", () => {
       totalInteractions: workbench.aiAssistant.total,
       pendingReviewCount: workbench.aiAssistant.reviewQueue.total,
       latestFailureCode: null,
+      recentProviderCalls: 0,
+      recentProviderFailures: 0,
+      averageLatencyMs: null,
+      totalTokens: 0,
     })
     expect(workbench.cropModels.items).toContainEqual(
       expect.objectContaining({ cropName: "番茄", activeStage: "苗期" }),

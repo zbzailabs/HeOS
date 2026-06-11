@@ -40,6 +40,7 @@ async function readConsoleD1Results(
       aiAssistant,
       aiReviewQueue,
       latestTelemetry,
+      aiProviderOperations,
     ] = await Promise.all([
       handlers.projectDetail(
         new URLSearchParams({
@@ -89,6 +90,9 @@ async function readConsoleD1Results(
         "console_ai_review_queue_d1",
       ),
       listLatestTelemetryRows(db),
+      readAiProviderOperations(db, "tenant-tenglong-school").catch(
+        () => baseAiProviderOperations(),
+      ),
     ])
 
     return {
@@ -100,9 +104,68 @@ async function readConsoleD1Results(
       aiAssistant,
       aiReviewQueue,
       latestTelemetry,
+      aiProviderOperations,
     }
   } catch {
     return null
+  }
+}
+
+export async function readAiProviderOperations(
+  db: CoreD1Database,
+  tenantId: string,
+) {
+  const result = await db
+    .prepare(
+      `SELECT status, latency_ms, total_tokens, failure_code, created_at
+       FROM heos_ai_provider_metrics
+       WHERE tenant_id = ?
+       ORDER BY created_at DESC
+       LIMIT 50`,
+    )
+    .bind(tenantId)
+    .all<{
+      status: string
+      latency_ms: number | null
+      total_tokens: number | null
+      failure_code: string | null
+      created_at: string
+    }>()
+
+  const rows = result.results ?? []
+  const recentProviderFailures = rows.filter((row) => row.status === "failure")
+  const latencyValues = rows
+    .map((row) => row.latency_ms)
+    .filter((value): value is number => typeof value === "number")
+  const averageLatencyMs =
+    latencyValues.length > 0
+      ? Math.round(
+          latencyValues.reduce((total, value) => total + value, 0) /
+            latencyValues.length,
+        )
+      : null
+
+  return {
+    recentProviderCalls: rows.length,
+    recentProviderFailures: recentProviderFailures.length,
+    averageLatencyMs,
+    totalTokens: rows.reduce(
+      (total, row) =>
+        total + (typeof row.total_tokens === "number" ? row.total_tokens : 0),
+      0,
+    ),
+    latestFailureCode:
+      recentProviderFailures.find((row) => row.failure_code)?.failure_code ?? null,
+  }
+}
+
+function baseAiProviderOperations() {
+  return {
+    recentProviderCalls: 0,
+    recentProviderFailures: 0,
+    averageLatencyMs: null,
+    totalTokens: 0,
+    latestFailureCode: null,
   }
 }
 

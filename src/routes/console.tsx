@@ -662,6 +662,26 @@ function AiAssistantPanel({
             label="最近失败"
             value={aiAssistant.operations.latestFailureCode ?? 'none'}
           />
+          <MiniStat
+            label="最近调用"
+            value={String(aiAssistant.operations.recentProviderCalls)}
+          />
+          <MiniStat
+            label="调用失败"
+            value={String(aiAssistant.operations.recentProviderFailures)}
+          />
+          <MiniStat
+            label="平均耗时"
+            value={
+              aiAssistant.operations.averageLatencyMs === null
+                ? 'none'
+                : `${aiAssistant.operations.averageLatencyMs}ms`
+            }
+          />
+          <MiniStat
+            label="Token"
+            value={String(aiAssistant.operations.totalTokens)}
+          />
         </div>
 
         <div className="rounded-lg border border-[#f0d7a8] bg-[#fffaf0] px-3 py-3 md:col-span-2">

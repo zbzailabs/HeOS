@@ -190,6 +190,10 @@ const aiReviewEmptyState = "当前没有待人工确认的 AI 建议。"
 const aiAssistantOperations = {
   currentModelName: "deepseek-v4-flash",
   latestFailureCode: null as string | null,
+  recentProviderCalls: 0,
+  recentProviderFailures: 0,
+  averageLatencyMs: null as number | null,
+  totalTokens: 0,
 }
 
 export function getConsoleDataWorkbench() {
