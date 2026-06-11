@@ -156,6 +156,25 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
     gap: null,
     plan: "Issue、文档和验收记录保持互相引用。",
   },
+  {
+    id: "S4-10",
+    title: "AI provider 观测证据",
+    specRef: "验收 7 AI 日志与 S4-06 至 S4-09",
+    issue: "#66",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S4-06-ai-observability.md",
+      "docs/specs/S4-07-ai-provider-metrics-d1.md",
+      "docs/specs/S4-08-ai-provider-metrics-console.md",
+      "docs/specs/S4-09-ai-provider-metrics-window.md",
+      "db/migrations/0009_heos_ai_provider_metrics.sql",
+      "src/domain/ai/metrics-d1-repository.ts",
+      "src/lib/console-data.test.ts",
+    ],
+    gap: null,
+    plan: "发布冻结报告持续引用 AI provider 指标、后台摘要和 24 小时窗口证据。",
+  },
 ]
 
 export function getComplianceChecklist(
@@ -215,7 +234,7 @@ export function renderComplianceReport(checklist: ComplianceChecklist) {
     "## 3. 下一迭代目标",
     "",
     "- 将演示数据切换为 D1 查询结果。",
-    "- 基于 S1-05 核心表补齐项目、作物、农事、追溯和 AI 页面。",
+    "- 基于 S1-05 核心表继续补齐项目、作物、农事和追溯页面。",
     "- 将仁科同步接入 Cron Triggers、Queues 和失败重试。",
     "- 将告警关闭、恢复和审计记录接入真实业务表。",
   )
