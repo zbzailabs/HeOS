@@ -15,7 +15,7 @@ HeOS 已完成标准字典、遥测模型、告警规则、审计字段、权限
 |核心查询切换 D1|#38|核心查询 API 优先读取 `HEOS_DB`|P0|租户隔离、分页筛选、traceId|
 |Renke 自动同步|#39|接入 Cron Triggers、Queues 和同步重放边界|P0|队列消息、失败处理、最近同步状态|
 |业务流程页面|#40|告警、农事、追溯和 AI 页面进入可操作流程|P1|权限校验、审计记录、移动端无溢出|
-|发布验收|#41|形成下一阶段线上核验和项目记录|P1|部署记录、合规报告、GitHub/飞书一致|
+|发布验收|#41|形成下一阶段线上核验和项目记录|P1|部署记录、合规报告、Issue/Project 一致|
 
 ## 3. 生产验收边界
 
@@ -66,7 +66,7 @@ curl -I https://app.yunhe.ai/login
 
 ## 6. 发布记录要求
 
-阶段结束时在 GitHub Issues、GitHub Project 和飞书项目同步以下内容：
+阶段结束时在 GitHub Issues 和 GitHub Project 同步以下内容：
 
 - Issue、PR、commit 链接。
 - 修改文件清单。

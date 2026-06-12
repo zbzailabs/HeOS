@@ -9,7 +9,7 @@
 - Cloudflare Queue 创建。
 - Cloudflare Workers 部署。
 - 线上登录入口、D1 数据、核心 API 和 Renke 运维入口核验。
-- GitHub Issues、GitHub Project、飞书项目记录同步。
+- GitHub Issues 与 GitHub Project 记录同步。
 
 ## 2. 验收命令
 
@@ -31,4 +31,5 @@ curl -I https://app.yunhe.ai/login
 - 分支和 commit。
 - 验证命令与结果。
 - D1、Queues、Workers 的线上状态。
-- 飞书项目记录链接。
+- GitHub Issue 记录链接。
+- GitHub Project 状态。

@@ -117,7 +117,7 @@
 - 状态：已覆盖
 - 阻断发布：否
 - 证据：`docs/specs/S4-03-next-stage-release-verification.md`
-- 验收重点：线上关键路径、部署记录、GitHub Project 和飞书项目记录一致。
+- 验收重点：线上关键路径、部署记录、GitHub Issue 和 GitHub Project 记录一致。
 
 ### S4-13 遥测 D1 查询 traceId 贯通
 
