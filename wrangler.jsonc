@@ -35,5 +35,11 @@
       "database_id": "0888289d-a50e-465c-89d9-d861fd8cca6b",
       "migrations_dir": "db/migrations"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "HEOS_EXPORTS",
+      "bucket_name": "heos-exports"
+    }
   ]
 }

@@ -267,7 +267,25 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
       "DESIGN.md",
     ],
     gap: null,
-    plan: "后续在真实 R2 上传和报表生成任务中复用导出计划与 trace.export 审计动作。",
+    plan: "已在 S4-17 复用导出计划完成 JSON 文件真实 R2 上传，后续扩展 PDF、DOCX 和 XLSX 报表生成。",
+  },
+  {
+    id: "S4-17",
+    title: "追溯导出 JSON 文件写入 R2",
+    specRef: "一期验收 2、验收 7、验收 8 与追溯导出",
+    issue: "#73",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S4-17-trace-export-r2-json.md",
+      "src/domain/trace/export-plan.ts",
+      "src/domain/trace/export-plan.test.ts",
+      "src/routes/api/core/trace-exports.ts",
+      "src/domain/rbac/production-write-auth.ts",
+      "wrangler.jsonc",
+    ],
+    gap: null,
+    plan: "继续扩展 PDF、DOCX、XLSX 文件生成和控制台导出入口。",
   },
 ]
 
@@ -331,7 +349,7 @@ export function renderComplianceReport(checklist: ComplianceChecklist) {
     "- 持续用 S4-11 证据核验核心域 D1 查询与业务动作 API。",
     "- 基于 S1-05 核心表继续扩展项目、作物、农事和追溯独立页面。",
     "- 将仁科同步接入 Cron Triggers、Queues 和失败重试。",
-    "- 将告警、农事和追溯动作纳入下一轮生产回归记录。",
+    "- 将追溯 JSON 导出纳入生产回归记录，并继续扩展 PDF、DOCX、XLSX 文件生成。",
   )
 
   return `${lines.join("\n")}\n`

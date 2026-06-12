@@ -143,6 +143,14 @@
 - 证据：`docs/specs/S4-15-phase-one-readiness-health-export.md`、`src/domain/operations/health.ts`、`src/domain/trace/export-plan.ts`、`src/routes/api/operations/health.ts`、`DESIGN.md`、`docs/heos-prd/02-技术架构.md`
 - 验收重点：生产健康检查可持续复核，追溯导出具备 R2 object key 与 `trace.export` 审计边界。
 
+### S4-17 追溯导出 JSON 文件写入 R2
+
+- Issue：#73
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S4-17-trace-export-r2-json.md`、`src/domain/trace/export-plan.ts`、`src/domain/trace/export-plan.test.ts`、`src/routes/api/core/trace-exports.ts`、`src/domain/rbac/production-write-auth.ts`、`wrangler.jsonc`
+- 验收重点：`POST /api/core/trace-exports` 从 D1 读取公开追溯档案，生成 JSON 文件，写入 `HEOS_EXPORTS` R2，回填导出对象引用并写入 `trace.export` 审计记录。
+
 ## 4. 当前结论
 
-截至本报告版本，一期收口无已识别发布阻断项。D1、Renke Cron/Queues、生产写入鉴权、健康检查、遥测 traceId、追溯公开页和 R2 导出边界均具备可复核证据；真实 R2 文件上传和报表文件生成进入后续交付。
+截至本报告版本，一期收口无已识别发布阻断项。D1、Renke Cron/Queues、生产写入鉴权、健康检查、遥测 traceId、追溯公开页和追溯 JSON 文件 R2 上传均具备可复核证据；PDF、DOCX、XLSX 报表文件生成进入后续交付。

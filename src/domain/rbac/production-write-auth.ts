@@ -10,6 +10,7 @@ export const productionWriteActions = {
   AGRI_TASK_STATUS_UPDATE: "agri_task.status.update",
   AI_REVIEW: "ai.review",
   RENKE_SYNC: "renke.sync",
+  TRACE_ARCHIVE_EXPORT: "trace.archive.export",
 } as const
 
 export type ProductionWriteAction =
@@ -50,6 +51,8 @@ const actionPermissionMap = {
     permissionCodes.AGRI_TASK_WRITE,
   [productionWriteActions.AI_REVIEW]: permissionCodes.AI_REVIEW_WRITE,
   [productionWriteActions.RENKE_SYNC]: permissionCodes.PROVIDER_SYNC_WRITE,
+  [productionWriteActions.TRACE_ARCHIVE_EXPORT]:
+    permissionCodes.TRACE_ARCHIVE_EXPORT,
 } as const satisfies Record<ProductionWriteAction, PermissionCode>
 
 export function getProductionWritePermission(action: ProductionWriteAction) {
