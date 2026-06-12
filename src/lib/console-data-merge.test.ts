@@ -55,5 +55,12 @@ describe("console D1 workbench merge", () => {
       { action: "confirm", label: "确认" },
       { action: "reject", label: "拒绝" },
     ])
+    expect(merged.traceArchives.exportAction).toEqual({
+      apiPath: "/api/core/trace-exports",
+      format: "json",
+      permissionCode: "trace:archive:export",
+      auditAction: "trace.export",
+      label: "导出 JSON",
+    })
   })
 })

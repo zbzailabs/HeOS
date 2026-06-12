@@ -174,6 +174,14 @@ const tracePublicFields = [
   "inspectionSummary",
 ] as const
 
+const traceExportAction = {
+  apiPath: "/api/core/trace-exports",
+  format: "json",
+  permissionCode: "trace:archive:export",
+  auditAction: "trace.export",
+  label: "导出 JSON",
+} as const
+
 const aiSourcePolicy = {
   authorizedOnly: true,
   auditAction: "ai.interaction.read",
@@ -317,6 +325,7 @@ export function getConsoleDataWorkbench() {
       ...traceArchives,
       items: traceArchives.items.filter((archive) => archive.visibility === "public"),
       publicFields: tracePublicFields,
+      exportAction: traceExportAction,
     },
     aiAssistant: {
       ...aiAssistant,

@@ -151,6 +151,14 @@
 - 证据：`docs/specs/S4-17-trace-export-r2-json.md`、`src/domain/trace/export-plan.ts`、`src/domain/trace/export-plan.test.ts`、`src/routes/api/core/trace-exports.ts`、`src/domain/rbac/production-write-auth.ts`、`wrangler.jsonc`
 - 验收重点：`POST /api/core/trace-exports` 从 D1 读取公开追溯档案，生成 JSON 文件，写入 `HEOS_EXPORTS` R2，回填导出对象引用并写入 `trace.export` 审计记录。
 
+### S4-18 追溯 JSON 导出控制台入口
+
+- Issue：#74
+- 状态：已覆盖
+- 阻断发布：否
+- 证据：`docs/specs/S4-18-trace-export-console-action.md`、`src/domain/console/workbench.ts`、`src/domain/console/workbench.test.ts`、`src/lib/console-data-merge.ts`、`src/routes/console.tsx`、`tests/e2e/console-smoke.spec.ts`
+- 验收重点：`/console` 追溯档案区展示“导出 JSON”按钮，调用 S4-17 API，展示 R2 `objectRef` 或错误提示。
+
 ## 4. 当前结论
 
-截至本报告版本，一期收口无已识别发布阻断项。D1、Renke Cron/Queues、生产写入鉴权、健康检查、遥测 traceId、追溯公开页和追溯 JSON 文件 R2 上传均具备可复核证据；PDF、DOCX、XLSX 报表文件生成进入后续交付。
+截至本报告版本，一期收口无已识别发布阻断项。D1、Renke Cron/Queues、生产写入鉴权、健康检查、遥测 traceId、追溯公开页、追溯 JSON 文件 R2 上传和控制台导出入口均具备可复核证据；PDF、DOCX、XLSX 报表文件生成进入后续交付。

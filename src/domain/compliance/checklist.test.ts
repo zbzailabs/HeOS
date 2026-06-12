@@ -40,6 +40,8 @@ describe("compliance checklist", () => {
     expect(report).toContain("Issue：#71")
     expect(report).toContain("### S4-17 追溯导出 JSON 文件写入 R2")
     expect(report).toContain("Issue：#73")
+    expect(report).toContain("### S4-18 追溯 JSON 导出控制台入口")
+    expect(report).toContain("Issue：#74")
     expect(report).toContain("阻断项：0")
   })
 
@@ -184,6 +186,22 @@ describe("compliance checklist", () => {
         "docs/specs/S4-17-trace-export-r2-json.md",
         "src/routes/api/core/trace-exports.ts",
         "wrangler.jsonc",
+      ]),
+    )
+    expect(checklist.items.find((item) => item.id === "S4-18")).toEqual(
+      expect.objectContaining({
+        title: "追溯 JSON 导出控制台入口",
+        issue: "#74",
+        status: complianceStatuses.COVERED,
+        blocker: false,
+        gap: null,
+      }),
+    )
+    expect(checklist.items.find((item) => item.id === "S4-18")?.evidence).toEqual(
+      expect.arrayContaining([
+        "docs/specs/S4-18-trace-export-console-action.md",
+        "src/routes/console.tsx",
+        "tests/e2e/console-smoke.spec.ts",
       ]),
     )
   })

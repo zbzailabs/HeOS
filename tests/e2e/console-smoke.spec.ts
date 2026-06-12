@@ -107,8 +107,17 @@ test.describe('HeOS console rendered measurement', () => {
     await expect(page.getByRole('heading', { name: '农事任务' })).toBeVisible()
     await expect(page.getByRole('heading', { name: '告警中心' })).toBeVisible()
     await expect(page.getByRole('heading', { name: '追溯档案' })).toBeVisible()
+    await expect(page.getByRole('button', { name: '导出 JSON' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'AI 辅助记录' })).toBeVisible()
     await expect(page.locator('body')).not.toContainText(frameworkOverlayPattern)
+
+    const desktopWidths = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }))
+    expect(desktopWidths.scrollWidth).toBeLessThanOrEqual(
+      desktopWidths.clientWidth,
+    )
 
     await page.screenshot({
       path: testInfo.outputPath(`console-${testInfo.project.name}.png`),

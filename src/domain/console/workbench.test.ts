@@ -150,6 +150,13 @@ describe("console data workbench", () => {
       "agriRecords",
       "inspectionSummary",
     ])
+    expect(workbench.traceArchives.exportAction).toEqual({
+      apiPath: "/api/core/trace-exports",
+      format: "json",
+      permissionCode: "trace:archive:export",
+      auditAction: "trace.export",
+      label: "导出 JSON",
+    })
     expect(workbench.aiAssistant.sourcePolicy).toMatchObject({
       authorizedOnly: true,
       auditAction: "ai.interaction.read",

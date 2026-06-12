@@ -547,6 +547,67 @@ function TraceArchivesPanel({
 }: {
   traceArchives: ReturnType<typeof getConsoleDataWorkbench>['traceArchives']
 }) {
+  const [exportingArchiveId, setExportingArchiveId] = useState<string | null>(null)
+  const [exportResults, setExportResults] = useState<
+    Record<string, { ok: boolean; message: string }>
+  >({})
+
+  const handleTraceExport = async (
+    archive: (typeof traceArchives.items)[number],
+  ) => {
+    if (exportingArchiveId) {
+      return
+    }
+
+    setExportingArchiveId(archive.id)
+    setExportResults((current) => ({
+      ...current,
+      [archive.id]: { ok: true, message: "正在生成 JSON 文件..." },
+    }))
+
+    try {
+      const response = await fetch(traceArchives.exportAction.apiPath, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          tenantId: archive.tenantId,
+          publicSlug: archive.publicSlug,
+          format: traceArchives.exportAction.format,
+        }),
+      })
+      const body = (await response.json()) as TraceExportResponse
+
+      if (!response.ok || !isTraceExportSuccess(body)) {
+        setExportResults((current) => ({
+          ...current,
+          [archive.id]: {
+            ok: false,
+            message: readTraceExportError(body) ?? "追溯导出失败。",
+          },
+        }))
+        return
+      }
+
+      setExportResults((current) => ({
+        ...current,
+        [archive.id]: {
+          ok: true,
+          message: body.data.objectRef,
+        },
+      }))
+    } catch {
+      setExportResults((current) => ({
+        ...current,
+        [archive.id]: {
+          ok: false,
+          message: "网络异常，追溯导出请求未完成。",
+        },
+      }))
+    } finally {
+      setExportingArchiveId(null)
+    }
+  }
+
   return (
     <BusinessPanel
       id="trace-archives"
@@ -556,16 +617,60 @@ function TraceArchivesPanel({
     >
       <FilterRow labels={['visibility: public']} />
       <FilterRow labels={traceArchives.publicFields.map((field) => `public: ${field}`)} />
+      <FilterRow
+        labels={[
+          traceArchives.exportAction.apiPath,
+          traceArchives.exportAction.permissionCode,
+          traceArchives.exportAction.auditAction,
+        ]}
+      />
       <div className="mt-3 space-y-2">
         {traceArchives.items.length > 0 ? (
-          traceArchives.items.map((archive) => (
-            <ListRow
-              key={archive.id}
-              title={archive.publicSlug}
-              meta={`${archive.cropCycleId} / ${archive.createdAt}`}
-              value={archive.visibility}
-            />
-          ))
+          traceArchives.items.map((archive) => {
+            const result = exportResults[archive.id]
+            const isExporting = exportingArchiveId === archive.id
+
+            return (
+              <div
+                key={archive.id}
+                className="rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3 text-sm"
+              >
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <p className="m-0 break-words font-extrabold text-[#12383c]">
+                      {archive.publicSlug}
+                    </p>
+                    <p className="m-0 mt-1 break-words text-xs font-semibold leading-5 text-[#6c817b]">
+                      {archive.cropCycleId} / {archive.createdAt}
+                    </p>
+                  </div>
+                  <span className="w-fit rounded-md bg-white px-2 py-1 text-xs font-extrabold text-[#2d7359]">
+                    {archive.visibility}
+                  </span>
+                  <button
+                    type="button"
+                    className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-[#c8ddd0] bg-white px-3 py-2 text-xs font-extrabold text-[#12383c] transition hover:bg-[#f7fbf8] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={Boolean(exportingArchiveId)}
+                    onClick={() => void handleTraceExport(archive)}
+                  >
+                    <Download size={14} />
+                    {isExporting ? "导出中" : traceArchives.exportAction.label}
+                  </button>
+                </div>
+                {result ? (
+                  <p
+                    className={`m-0 mt-3 break-all rounded-lg px-3 py-2 text-xs font-bold leading-5 ${
+                      result.ok
+                        ? "bg-[#e8f5ef] text-[#2d7359]"
+                        : "bg-[#fff1f0] text-[#9a3412]"
+                    }`}
+                  >
+                    {result.message}
+                  </p>
+                ) : null}
+              </div>
+            )
+          })
         ) : (
           <EmptyState text="当前没有公开追溯档案。" />
         )}
@@ -576,6 +681,34 @@ function TraceArchivesPanel({
       />
     </BusinessPanel>
   )
+}
+
+type TraceExportResponse =
+  | {
+      traceId: string
+      data: {
+        objectRef: string
+      }
+    }
+  | {
+      traceId: string
+      errors?: { code?: string; message?: string }[]
+    }
+
+function isTraceExportSuccess(
+  body: TraceExportResponse,
+): body is Extract<TraceExportResponse, { data: { objectRef: string } }> {
+  return (
+    "data" in body &&
+    typeof body.data === "object" &&
+    typeof body.data.objectRef === "string"
+  )
+}
+
+function readTraceExportError(body: TraceExportResponse) {
+  return "errors" in body && Array.isArray(body.errors)
+    ? (body.errors[0]?.message ?? body.errors[0]?.code ?? null)
+    : null
 }
 
 function AiAssistantPanel({

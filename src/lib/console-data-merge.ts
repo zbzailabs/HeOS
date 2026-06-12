@@ -16,7 +16,7 @@ export type ConsoleD1WorkbenchData = {
   alertCenter: ConsoleDataResult<Omit<ConsoleDataWorkbench["alertCenter"], "workflow">>
   agriTasks: ConsoleDataResult<Omit<ConsoleDataWorkbench["agriTasks"], "workflow">>
   traceArchives: ConsoleDataResult<
-    Omit<ConsoleDataWorkbench["traceArchives"], "publicFields">
+    Omit<ConsoleDataWorkbench["traceArchives"], "publicFields" | "exportAction">
   >
   aiAssistant: ConsoleDataResult<
     Omit<
@@ -97,6 +97,7 @@ export function mergeConsoleD1WorkbenchData(
         (archive) => archive.visibility === "public",
       ),
       publicFields: base.traceArchives.publicFields,
+      exportAction: base.traceArchives.exportAction,
     },
     aiAssistant: {
       ...aiAssistant.value,

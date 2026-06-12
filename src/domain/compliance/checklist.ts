@@ -285,7 +285,25 @@ export const heosComplianceItems: readonly ComplianceChecklistItem[] = [
       "wrangler.jsonc",
     ],
     gap: null,
-    plan: "继续扩展 PDF、DOCX、XLSX 文件生成和控制台导出入口。",
+    plan: "S4-18 已补齐控制台导出入口，后续继续扩展 PDF、DOCX、XLSX 文件生成。",
+  },
+  {
+    id: "S4-18",
+    title: "追溯 JSON 导出控制台入口",
+    specRef: "一期验收 2、验收 7、验收 8 与后台追溯操作",
+    issue: "#74",
+    status: complianceStatuses.COVERED,
+    blocker: false,
+    evidence: [
+      "docs/specs/S4-18-trace-export-console-action.md",
+      "src/domain/console/workbench.ts",
+      "src/domain/console/workbench.test.ts",
+      "src/lib/console-data-merge.ts",
+      "src/routes/console.tsx",
+      "tests/e2e/console-smoke.spec.ts",
+    ],
+    gap: null,
+    plan: "继续扩展 PDF、DOCX、XLSX 文件生成和控制台下载历史展示。",
   },
 ]
 
@@ -349,7 +367,7 @@ export function renderComplianceReport(checklist: ComplianceChecklist) {
     "- 持续用 S4-11 证据核验核心域 D1 查询与业务动作 API。",
     "- 基于 S1-05 核心表继续扩展项目、作物、农事和追溯独立页面。",
     "- 将仁科同步接入 Cron Triggers、Queues 和失败重试。",
-    "- 将追溯 JSON 导出纳入生产回归记录，并继续扩展 PDF、DOCX、XLSX 文件生成。",
+    "- 将追溯 JSON 导出控制台入口纳入生产回归记录，并继续扩展 PDF、DOCX、XLSX 文件生成。",
   )
 
   return `${lines.join("\n")}\n`

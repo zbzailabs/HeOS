@@ -36,4 +36,4 @@ HeOS 是基于 TanStack Start 与 Cloudflare Workers 的作物种植综合服务
 - Renke 设备 `40406816` 已接入 Cron Triggers、Queues、D1 latest/history 和同步记录。
 - 生产写入 API 已完成请求级 session、权限码和租户范围校验。
 - `/api/operations/health` 提供持续性生产健康检查。
-- 追溯导出已具备 R2 object key 和 `trace.export` 审计边界；真实文件生成和上传进入后续任务。
+- 追溯导出已完成 JSON 文件生成、R2 上传、D1 对象引用回填、`trace.export` 审计写入和 `/console` 导出入口；PDF、DOCX、XLSX 文件生成进入后续任务。
