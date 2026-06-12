@@ -591,6 +591,34 @@ function AiAssistantPanel({
     action: 'confirm' | 'reject'
   } | null>(null)
   const [reviewError, setReviewError] = useState<string | null>(null)
+  const [runtimeProvider, setRuntimeProvider] = useState<'openrouter' | 'openai'>(
+    'openrouter',
+  )
+  const [runtimeEvents, setRuntimeEvents] = useState<string[]>([])
+  const [runtimeDraft, setRuntimeDraft] = useState<{
+    sourceTitle: string
+    recommendation: string
+  } | null>(null)
+  const [runtimeStatus, setRuntimeStatus] = useState<
+    'idle' | 'streaming' | 'approval_required' | 'complete' | 'error'
+  >('idle')
+  const [runtimeError, setRuntimeError] = useState<string | null>(null)
+
+  const runtimeSource = reviewQueueItems[0]
+    ? {
+        tenantId: 'tenant-tenglong-school',
+        table: 'heos_ai_interactions',
+        targetId: reviewQueueItems[0].id,
+        title: reviewQueueItems[0].sourceTitle,
+        permissionCode: 'ai:review:read',
+      }
+    : {
+        tenantId: 'tenant-tenglong-school',
+        table: 'heos_alerts',
+        targetId: 'alert-soil-ph-critical',
+        title: 'soil_ph critical 告警',
+        permissionCode: 'alert:read',
+      }
 
   const handleReview = async (interactionId: string, action: 'confirm' | 'reject') => {
     if (reviewing) {
@@ -625,6 +653,71 @@ function AiAssistantPanel({
       items.filter((item) => item.id !== interactionId),
     )
     setReviewing(null)
+  }
+
+  const handleRuntimeStream = async (approveToolCall: boolean) => {
+    setRuntimeEvents([])
+    setRuntimeDraft(null)
+    setRuntimeError(null)
+    setRuntimeStatus('streaming')
+
+    const response = await fetch('/api/core/ai-runtime', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        threadId: 'thread-console-ai',
+        runId: `run-console-ai-${Date.now()}`,
+        state: { panel: 'ai-assistant' },
+        messages: [
+          {
+            id: 'message-console-ai',
+            role: 'user',
+            content: '基于授权来源生成人工复核建议。',
+          },
+        ],
+        tools: [
+          {
+            name: 'create_ai_review_draft',
+            description: '生成 AI 建议草稿并进入人工确认队列。',
+          },
+        ],
+        context: [],
+        forwardedProps: {
+          tenantId: 'tenant-tenglong-school',
+          userId: 'user-tenglong-admin',
+          scenario: 'alert_explanation',
+          provider: runtimeProvider,
+          source: runtimeSource,
+          approveToolCall,
+        },
+      }),
+    })
+
+    if (!response.ok || !response.body) {
+      const body = await response.json().catch(() => null)
+      setRuntimeError(readReviewErrorMessage(body) ?? `AI Runtime 请求失败：${response.status}`)
+      setRuntimeStatus('error')
+      return
+    }
+
+    await readRuntimeEventStream(response.body, (eventName, data) => {
+      setRuntimeEvents((events) => [...events.slice(-4), eventName])
+
+      if (eventName === 'TOOL_CALL_APPROVAL_REQUIRED') {
+        setRuntimeStatus('approval_required')
+      }
+
+      if (eventName === 'STRUCTURED_OUTPUT' && isRuntimeStructuredOutput(data)) {
+        setRuntimeDraft({
+          sourceTitle: data.partial.sourceTitle,
+          recommendation: data.partial.recommendation,
+        })
+      }
+
+      if (eventName === 'RUN_FINISHED') {
+        setRuntimeStatus('complete')
+      }
+    })
   }
 
   return (
@@ -760,6 +853,81 @@ function AiAssistantPanel({
           </div>
         </div>
 
+        <div className="rounded-lg border border-[#c8ddd0] bg-white px-3 py-3 md:col-span-2">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <p className="m-0 text-sm font-extrabold text-[#12383c]">
+                TanStack AI Runtime
+              </p>
+              <p className="m-0 mt-1 break-words text-xs font-semibold leading-5 text-[#6c817b]">
+                AG-UI SSE / {runtimeProvider} / gateway none / source {runtimeSource.title}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <select
+                className="h-9 rounded-lg border border-[#c8ddd0] bg-[#f8fcf9] px-2 text-xs font-extrabold text-[#12383c]"
+                value={runtimeProvider}
+                onChange={(event) =>
+                  setRuntimeProvider(event.target.value as 'openrouter' | 'openai')
+                }
+                aria-label="选择 AI provider"
+              >
+                <option value="openrouter">OpenRouter</option>
+                <option value="openai">OpenAI</option>
+              </select>
+              <button
+                type="button"
+                className="rounded-lg border border-[#c8ddd0] bg-[#e8f5ef] px-3 py-2 text-xs font-extrabold text-[#2d7359] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={runtimeStatus === 'streaming'}
+                onClick={() => void handleRuntimeStream(false)}
+              >
+                请求审批
+              </button>
+              <button
+                type="button"
+                className="rounded-lg border border-[#b7d8c8] bg-[#12383c] px-3 py-2 text-xs font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={runtimeStatus === 'streaming'}
+                onClick={() => void handleRuntimeStream(true)}
+              >
+                批准工具
+              </button>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-4">
+            <MiniStat label="状态" value={runtimeStatus} />
+            <MiniStat label="工具" value="server/client" />
+            <MiniStat label="媒体" value="image/audio/video" />
+            <MiniStat label="实时语音" value="token required" />
+          </div>
+          {runtimeError ? (
+            <p className="m-0 mt-3 rounded-lg border border-[#f0c4bd] bg-[#fff1ef] px-3 py-2 text-xs font-bold leading-5 text-[#9d3a2f]">
+              {runtimeError}
+            </p>
+          ) : null}
+          {runtimeEvents.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {runtimeEvents.map((eventName, index) => (
+                <span
+                  key={`${eventName}-${index}`}
+                  className="rounded-lg bg-[#f8fcf9] px-2 py-1 text-xs font-extrabold text-[#345c58]"
+                >
+                  {eventName}
+                </span>
+              ))}
+            </div>
+          ) : null}
+          {runtimeDraft ? (
+            <div className="mt-3 rounded-lg border border-[#d7e6db] bg-[#f8fcf9] px-3 py-3">
+              <p className="m-0 break-words text-sm font-extrabold text-[#12383c]">
+                {runtimeDraft.sourceTitle}
+              </p>
+              <p className="m-0 mt-1 break-words text-sm font-semibold leading-6 text-[#345c58]">
+                {runtimeDraft.recommendation}
+              </p>
+            </div>
+          ) : null}
+        </div>
+
         {aiAssistant.items.length > 0 ? (
           aiAssistant.items.map((interaction) => (
             <ListRow
@@ -792,6 +960,57 @@ function readReviewErrorMessage(body: unknown) {
   }
   const message = (firstError as { message?: unknown }).message
   return typeof message === 'string' && message.length > 0 ? message : null
+}
+
+async function readRuntimeEventStream(
+  body: ReadableStream<Uint8Array>,
+  onEvent: (eventName: string, data: unknown) => void,
+) {
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) {
+      break
+    }
+
+    buffer += decoder.decode(value, { stream: true })
+    const chunks = buffer.split('\n\n')
+    buffer = chunks.pop() ?? ''
+
+    for (const chunk of chunks) {
+      const eventName = chunk.match(/^event: (.+)$/m)?.[1]
+      const dataLine = chunk.match(/^data: (.+)$/m)?.[1]
+
+      if (!eventName) {
+        continue
+      }
+
+      onEvent(eventName, dataLine ? JSON.parse(dataLine) : null)
+    }
+  }
+}
+
+function isRuntimeStructuredOutput(value: unknown): value is {
+  partial: {
+    sourceTitle: string
+    recommendation: string
+  }
+} {
+  if (!value || typeof value !== 'object' || !('partial' in value)) {
+    return false
+  }
+
+  const partial = (value as { partial?: unknown }).partial
+
+  return Boolean(
+    partial &&
+      typeof partial === 'object' &&
+      typeof (partial as { sourceTitle?: unknown }).sourceTitle === 'string' &&
+      typeof (partial as { recommendation?: unknown }).recommendation === 'string',
+  )
 }
 
 function WorkflowStrip({

@@ -24,6 +24,7 @@ import { Route as ApiCoreProjectRouteImport } from './routes/api/core/project'
 import { Route as ApiCoreDevicesRouteImport } from './routes/api/core/devices'
 import { Route as ApiCoreDashboardRouteImport } from './routes/api/core/dashboard'
 import { Route as ApiCoreAlertsRouteImport } from './routes/api/core/alerts'
+import { Route as ApiCoreAiRuntimeRouteImport } from './routes/api/core/ai-runtime'
 import { Route as ApiCoreAiReviewsRouteImport } from './routes/api/core/ai-reviews'
 import { Route as ApiCoreAiInteractionsRouteImport } from './routes/api/core/ai-interactions'
 import { Route as ApiCoreAgriTasksRouteImport } from './routes/api/core/agri-tasks'
@@ -106,6 +107,11 @@ const ApiCoreAlertsRoute = ApiCoreAlertsRouteImport.update({
   path: '/api/core/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCoreAiRuntimeRoute = ApiCoreAiRuntimeRouteImport.update({
+  id: '/api/core/ai-runtime',
+  path: '/api/core/ai-runtime',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCoreAiReviewsRoute = ApiCoreAiReviewsRouteImport.update({
   id: '/api/core/ai-reviews',
   path: '/api/core/ai-reviews',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
   '/api/core/ai-reviews': typeof ApiCoreAiReviewsRoute
+  '/api/core/ai-runtime': typeof ApiCoreAiRuntimeRoute
   '/api/core/alerts': typeof ApiCoreAlertsRoute
   '/api/core/dashboard': typeof ApiCoreDashboardRoute
   '/api/core/devices': typeof ApiCoreDevicesRoute
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
   '/api/core/ai-reviews': typeof ApiCoreAiReviewsRoute
+  '/api/core/ai-runtime': typeof ApiCoreAiRuntimeRoute
   '/api/core/alerts': typeof ApiCoreAlertsRoute
   '/api/core/dashboard': typeof ApiCoreDashboardRoute
   '/api/core/devices': typeof ApiCoreDevicesRoute
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/api/core/agri-tasks': typeof ApiCoreAgriTasksRoute
   '/api/core/ai-interactions': typeof ApiCoreAiInteractionsRoute
   '/api/core/ai-reviews': typeof ApiCoreAiReviewsRoute
+  '/api/core/ai-runtime': typeof ApiCoreAiRuntimeRoute
   '/api/core/alerts': typeof ApiCoreAlertsRoute
   '/api/core/dashboard': typeof ApiCoreDashboardRoute
   '/api/core/devices': typeof ApiCoreDevicesRoute
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
     | '/api/core/ai-reviews'
+    | '/api/core/ai-runtime'
     | '/api/core/alerts'
     | '/api/core/dashboard'
     | '/api/core/devices'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
     | '/api/core/ai-reviews'
+    | '/api/core/ai-runtime'
     | '/api/core/alerts'
     | '/api/core/dashboard'
     | '/api/core/devices'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/api/core/agri-tasks'
     | '/api/core/ai-interactions'
     | '/api/core/ai-reviews'
+    | '/api/core/ai-runtime'
     | '/api/core/alerts'
     | '/api/core/dashboard'
     | '/api/core/devices'
@@ -291,6 +303,7 @@ export interface RootRouteChildren {
   ApiCoreAgriTasksRoute: typeof ApiCoreAgriTasksRoute
   ApiCoreAiInteractionsRoute: typeof ApiCoreAiInteractionsRoute
   ApiCoreAiReviewsRoute: typeof ApiCoreAiReviewsRoute
+  ApiCoreAiRuntimeRoute: typeof ApiCoreAiRuntimeRoute
   ApiCoreAlertsRoute: typeof ApiCoreAlertsRoute
   ApiCoreDashboardRoute: typeof ApiCoreDashboardRoute
   ApiCoreDevicesRoute: typeof ApiCoreDevicesRoute
@@ -410,6 +423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCoreAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/core/ai-runtime': {
+      id: '/api/core/ai-runtime'
+      path: '/api/core/ai-runtime'
+      fullPath: '/api/core/ai-runtime'
+      preLoaderRoute: typeof ApiCoreAiRuntimeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/core/ai-reviews': {
       id: '/api/core/ai-reviews'
       path: '/api/core/ai-reviews'
@@ -467,6 +487,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCoreAgriTasksRoute: ApiCoreAgriTasksRoute,
   ApiCoreAiInteractionsRoute: ApiCoreAiInteractionsRoute,
   ApiCoreAiReviewsRoute: ApiCoreAiReviewsRoute,
+  ApiCoreAiRuntimeRoute: ApiCoreAiRuntimeRoute,
   ApiCoreAlertsRoute: ApiCoreAlertsRoute,
   ApiCoreDashboardRoute: ApiCoreDashboardRoute,
   ApiCoreDevicesRoute: ApiCoreDevicesRoute,
